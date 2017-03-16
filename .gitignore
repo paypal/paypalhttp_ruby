@@ -1,0 +1,7 @@
+*.gem
+tags
+.rvmrc
+Gemfile.lock
+.idea
+.bundle
+vendor
