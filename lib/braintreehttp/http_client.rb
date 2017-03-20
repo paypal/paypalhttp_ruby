@@ -5,12 +5,15 @@ module BraintreeHttp
 
   class DefaultHttpClient
 
-    def initialize
+    attr_accessor :environment
+
+    def initialize(environment)
+      @environment = environment
       @injectors = []
     end
 
     def user_agent
-      return "Ruby HTTP/1.1"
+      return "BraintreeHttp-Ruby HTTP/1.1"
     end
 
     def add_injector(inj)
@@ -26,30 +29,26 @@ module BraintreeHttp
         request["User-Agent"] = user_agent
       end
 
-      connection = Net::HTTP.new(request.uri.host)
-
-      #connection.open_timeout = @config.http_open_timeout
-      #connection.read_timeout = @config.http_read_timeout
-      connection.start do |http|
+      uri = URI(@environment.base_url)
+      Net::HTTP.start(uri.host, uri.port, :use_ssl => uri.scheme == 'https') do |http|
         parse_response(http.request(request))
       end
     end
 
     def parse_response(response)
-
       status_code = response.code
       body = response.body
-      if status_code.to_i >= 200 and status_code.to_i < 300
-        json_body = JSON.parse(body)
-        body = OpenStruct.new(json_body)
 
-        OpenStruct.new({
-          :status_code => status_code,
-          :data => body,
-          :headers => response.to_hash,
-        })
+      obj = OpenStruct.new({
+        :status_code => status_code,
+        :result => body,
+        :headers => response.to_hash,
+      })
+      if status_code.to_i >= 200 and status_code.to_i < 300
+        return obj
+      elsif
+        raise ServiceIOError.new(obj.status_code, obj.result, obj.headers)
       end
     end
-
   end
 end
