@@ -15,6 +15,12 @@ puts inj.environment
 
 client = DefaultHttpClient.new
 request = Net::HTTP::Get.new(URI('http://ip.jsontest.com/'))
+resp = nil
+begin
+  resp = client.execute(request)
+rescue => e
+  resp = e
+  puts resp.status_code
+end
 
-resp = client.execute(request)
 puts resp.inspect

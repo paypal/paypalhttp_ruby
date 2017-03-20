@@ -39,17 +39,21 @@ module BraintreeHttp
 
       status_code = response.code
       body = response.body
+      begin
+        body = OpenStruct.new(JSON.parse(response.body))
+      rescue
+        #noop
+      end
+      obj = OpenStruct.new({
+        :status_code => status_code,
+        :data => body,
+        :headers => response.to_hash,
+      })
       if status_code.to_i >= 200 and status_code.to_i < 300
-        json_body = JSON.parse(body)
-        body = OpenStruct.new(json_body)
-
-        OpenStruct.new({
-          :status_code => status_code,
-          :data => body,
-          :headers => response.to_hash,
-        })
+        return obj
+      elsif
+        raise ServiceIOError.new(obj.status_code, obj.data, obj.headers)
       end
     end
-
   end
 end
