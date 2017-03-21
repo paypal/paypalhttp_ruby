@@ -1,6 +1,6 @@
 $:.push File.expand_path("../lib", __FILE__)
 
-Gem::Specification.new do |gem|
+Gem::Specification.new do |s|
   s.name = "braintreehttp"
   s.summary = "BraintreeHttp Client Library"
   s.description = "Used for API clients"
