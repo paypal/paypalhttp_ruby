@@ -4,10 +4,11 @@ describe DefaultHttpClient do
 
   before do
     WebMock.disable!
+    @environment = Environment.new('https://ip.jsontest.com')
   end
 
   it "uses injectors to modify request" do
-    http_client = DefaultHttpClient.new
+    http_client = DefaultHttpClient.new(@environment)
 
     class CustomInjector < Injector
       def inject(request)
@@ -16,7 +17,7 @@ describe DefaultHttpClient do
     end
 
     http_client.add_injector(CustomInjector.new)
-    req = Net::HTTP::Get.new(URI('http://ip.jsontest.com/'))
+    req = Net::HTTP::Get.new(URI(@environment.base_url))
 
     begin
       http_client.execute(req)
@@ -27,8 +28,8 @@ describe DefaultHttpClient do
   end
 
   it "sets User-Agent header in request if not set" do
-    http_client = DefaultHttpClient.new
-    req = Net::HTTP::Get.new(URI('http://ip.jsontest.com/'))
+    http_client = DefaultHttpClient.new(@environment)
+    req = Net::HTTP::Get.new(URI(@environment.base_url))
 
     begin
       http_client.execute(req)
@@ -39,8 +40,8 @@ describe DefaultHttpClient do
   end
 
   it "does not overwrite User-Agent header if set" do
-    http_client = DefaultHttpClient.new
-    req = Net::HTTP::Get.new(URI('http://ip.jsontest.com/'))
+    http_client = DefaultHttpClient.new(@environment)
+    req = Net::HTTP::Get.new(URI(@environment.base_url))
     req["User-Agent"] = "Not Ruby Http/1.1"
 
     begin
@@ -61,13 +62,13 @@ describe DefaultHttpClient do
       },
     }
 
-    stub_request(:delete, "http://some-fake-host")
+    stub_request(:delete, @environment.base_url + "/path")
       .with(body: JSON.generate(expected_body))
 
-    req = Net::HTTP::Delete.new(URI("http://some-fake-host"))
+    req = Net::HTTP::Delete.new("/path")
     req.body = JSON.generate(expected_body)
 
-    http_client = DefaultHttpClient.new
+    http_client = DefaultHttpClient.new(@environment)
 
     begin
       resp = http_client.execute(req)
@@ -87,19 +88,47 @@ describe DefaultHttpClient do
 
     json = JSON.generate(return_data)
 
-    stub_request(:any, "www.example.com").
+    stub_request(:any, @environment.base_url).
       to_return(body: json, status: 204,
                 headers: { 'Some-Weird-Header' => "Some weird value" })
 
-      http_client = DefaultHttpClient.new
-      req = Net::HTTP::Get.new(URI('http://www.example.com'))
+      http_client = DefaultHttpClient.new(@environment)
+      req = Net::HTTP::Get.new(URI(@environment.base_url))
 
       resp = http_client.execute(req)
 
+      json_result = JSON.parse(resp.result)
       expect(resp.status_code).to eq("204")
-      expect(resp.result.key).to eq("value")
-      expect(resp.result.another_key).to eq(3)
+      expect(resp.result).to eq(json)
       expect(resp.headers["Some-Weird-Header".downcase]).to eq(["Some weird value"])
+  end
+
+  it "makes request when only a path is specified" do
+    WebMock.enable!
+
+    return_data = {
+      :error => "error message",
+      :another_key => 1013
+    }
+
+    json = JSON.generate(return_data)
+
+    stub_request(:any, @environment.base_url + "/v1/api").
+      to_return(body: json, status: 400,
+                headers: { 'Some-Weird-Header' => "Some weird value" })
+
+      http_client = DefaultHttpClient.new(@environment)
+      req = Net::HTTP::Get.new("/v1/api")
+
+      begin
+        resp = http_client.execute(req)
+        fail
+      rescue => e
+        resp = e
+        expect(resp.status_code).to eq("400")
+        expect(resp.result).to eq(json)
+        expect(resp.headers["Some-Weird-Header".downcase]).to eq(["Some weird value"])
+      end
   end
 
   it "throws for non-200 level response" do
@@ -112,12 +141,12 @@ describe DefaultHttpClient do
 
     json = JSON.generate(return_data)
 
-    stub_request(:any, "www.example.com").
+    stub_request(:any, @environment.base_url).
       to_return(body: json, status: 400,
                 headers: { 'Some-Weird-Header' => "Some weird value" })
 
-      http_client = DefaultHttpClient.new
-      req = Net::HTTP::Get.new(URI('http://www.example.com'))
+      http_client = DefaultHttpClient.new(@environment)
+      req = Net::HTTP::Get.new(URI(@environment.base_url))
 
       begin
         resp = http_client.execute(req)
@@ -125,8 +154,7 @@ describe DefaultHttpClient do
       rescue => e
         resp = e
         expect(resp.status_code).to eq("400")
-        expect(resp.result.error).to eq("error message")
-        expect(resp.result.another_key).to eq(1013)
+        expect(resp.result).to eq(json)
         expect(resp.headers["Some-Weird-Header".downcase]).to eq(["Some weird value"])
       end
   end
