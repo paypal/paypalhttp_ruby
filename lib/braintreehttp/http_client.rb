@@ -3,8 +3,7 @@ require 'ostruct'
 
 module BraintreeHttp
 
-  class DefaultHttpClient
-
+  class HttpClient
     attr_accessor :environment
 
     def initialize(environment)
@@ -13,7 +12,7 @@ module BraintreeHttp
     end
 
     def user_agent
-      return "BraintreeHttp-Ruby HTTP/1.1"
+      "BraintreeHttp-Ruby HTTP/1.1"
     end
 
     def add_injector(inj)
@@ -31,19 +30,24 @@ module BraintreeHttp
 
       uri = URI(@environment.base_url)
       Net::HTTP.start(uri.host, uri.port, :use_ssl => uri.scheme == 'https') do |http|
-        parse_response(http.request(request))
+        _parse_response(http.request(request))
       end
     end
 
-    def parse_response(response)
+    def parse_response_body(body, headers)
+      body
+    end
+
+    def _parse_response(response)
       status_code = response.code
       body = response.body
 
       obj = OpenStruct.new({
         :status_code => status_code,
-        :result => body,
+        :result => parse_response_body(response.body, response.to_hash),
         :headers => response.to_hash,
       })
+
       if status_code.to_i >= 200 and status_code.to_i < 300
         return obj
       elsif
