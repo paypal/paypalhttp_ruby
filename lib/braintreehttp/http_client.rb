@@ -24,7 +24,7 @@ module BraintreeHttp
         injector.inject(request)
       end
 
-      if !request["User-Agent"]
+      if !request["User-Agent"] || request["User-Agent"] == "Ruby"
         request["User-Agent"] = user_agent
       end
 
