@@ -39,7 +39,7 @@ describe HttpClient do
 
     http_client.execute(req)
 
-    expect(req["User-Agent"]).not_to be_empty
+    expect(req["User-Agent"]).to eq("BraintreeHttp-Ruby HTTP/1.1")
   end
 
   it "does not overwrite User-Agent header if set" do
