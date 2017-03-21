@@ -9,6 +9,8 @@ describe HttpClient do
   end
 
   it "uses injectors to modify request" do
+    WebMock.enable!
+
     http_client = HttpClient.new(@environment)
 
     class CustomInjector < Injector
@@ -18,42 +20,44 @@ describe HttpClient do
     end
 
     http_client.add_injector(CustomInjector.new)
-    req = Net::HTTP::Get.new(URI(@environment.base_url))
+    req = Net::HTTP::Get.new("/")
 
-    begin
-      http_client.execute(req)
-    rescue
-    end
+    stub_request(:any, @environment.base_url)
+
+    http_client.execute(req)
 
     expect(req["Some-Key"]).to eq("Some Value")
   end
 
   it "sets User-Agent header in request if not set" do
-    http_client = HttpClient.new(@environment)
-    req = Net::HTTP::Get.new(URI(@environment.base_url))
+    WebMock.enable!
 
-    begin
-      http_client.execute(req)
-    rescue
-    end
+    http_client = HttpClient.new(@environment)
+    req = Net::HTTP::Get.new("/")
+
+    stub_request(:any, @environment.base_url)
+
+    http_client.execute(req)
 
     expect(req["User-Agent"]).not_to be_empty
   end
 
   it "does not overwrite User-Agent header if set" do
+    WebMock.enable!
+
     http_client = HttpClient.new(@environment)
-    req = Net::HTTP::Get.new(URI(@environment.base_url))
+
+    req = Net::HTTP::Get.new("/")
     req["User-Agent"] = "Not Ruby Http/1.1"
 
-    begin
-      http_client.execute(req)
-    rescue
-    end
+    stub_request(:any, @environment.base_url)
+
+    http_client.execute(req)
 
     expect(req["User-Agent"]).to eq("Not Ruby Http/1.1")
   end
 
-  it "users body in request" do
+  it "uses body in request" do
     WebMock.enable!
 
     stub_request(:delete, @environment.base_url + "/path")
@@ -63,12 +67,8 @@ describe HttpClient do
 
     http_client = HttpClient.new(@environment)
 
-    begin
-      resp = http_client.execute(req)
-      expect(resp.status_code).to eq("200")
-    rescue => e
-      expect(e).to be_nil
-    end
+    resp = http_client.execute(req)
+    expect(resp.status_code).to eq("200")
 
     assert_requested(:delete, @environment.base_url + "/path") { |requested| requested.body == "I want to delete the thing" }
   end
@@ -82,14 +82,14 @@ describe HttpClient do
       to_return(body: return_data, status: 204,
                 headers: { 'Some-Weird-Header' => "Some weird value" })
 
-      http_client = HttpClient.new(@environment)
-      req = Net::HTTP::Get.new("/")
+    http_client = HttpClient.new(@environment)
+    req = Net::HTTP::Get.new("/")
 
-      resp = http_client.execute(req)
+    resp = http_client.execute(req)
 
-      expect(resp.status_code).to eq("204")
-      expect(resp.result).to eq(return_data)
-      expect(resp.headers["Some-Weird-Header".downcase]).to eq(["Some weird value"])
+    expect(resp.status_code).to eq("204")
+    expect(resp.result).to eq(return_data)
+    expect(resp.headers["Some-Weird-Header".downcase]).to eq(["Some weird value"])
   end
 
   it "throws for non-200 level response" do
@@ -131,13 +131,9 @@ describe HttpClient do
     http_client = HttpClient.new(@environment)
     req = Net::HTTP::Get.new("/v1/api")
 
-    begin
-      resp = http_client.execute(req)
-      expect(resp.status_code).to eq("200")
-      expect(resp.result).to eq(return_data)
-    rescue => e
-      expect(e).to be_nil
-    end
+    resp = http_client.execute(req)
+    expect(resp.status_code).to eq("200")
+    expect(resp.result).to eq(return_data)
   end
 
   it "allows subclasses to modify response body" do
@@ -148,25 +144,26 @@ describe HttpClient do
     }
 
     class JSONHttpClient < HttpClient
-      def parse_response(response)
-        OpenStruct.new(JSON.parse(response.body))
+      def parse_response_body(body, headers)
+        if headers["content-type"].include? "application/json"
+          return OpenStruct.new(JSON.parse(body))
+        end
+
+        body
       end
     end
 
     http_client = JSONHttpClient.new(@environment)
 
     stub_request(:get, @environment.base_url + "/v1/api")
-      .to_return(body: JSON.generate(return_data), status: 200)
+      .to_return(body: JSON.generate(return_data), status: 200, headers: {"Content-Type" => "application/json"})
 
     req = Net::HTTP::Get.new("/v1/api")
 
-    begin
-      resp = http_client.execute(req)
+    resp = http_client.execute(req)
 
-      expect(resp.status_code).to eq("200")
-      expect(resp.result.key).to eq("value")
-    rescue => e
-    end
+    expect(resp.status_code).to eq("200")
+    expect(resp.result.key).to eq("value")
   end
 end
 
