@@ -4,7 +4,7 @@ Gem::Specification.new do |gem|
   s.name = "braintreehttp"
   s.summary = "BraintreeHttp Client Library"
   s.description = "Used for API clients"
-  s.version = 1.0.0
+  s.version = "1.0.0"
   s.license = "MIT"
   s.author = "Braintree"
   s.email = "code@getbraintree.com"
