@@ -144,7 +144,7 @@ describe HttpClient do
     }
 
     class JSONHttpClient < HttpClient
-      def parse_response_body(body, headers)
+      def deserializeResponse(body, headers)
         if headers["content-type"].include? "application/json"
           return OpenStruct.new(JSON.parse(body))
         end
