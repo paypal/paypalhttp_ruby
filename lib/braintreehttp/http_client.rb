@@ -27,24 +27,32 @@ module BraintreeHttp
       if !request["User-Agent"] || request["User-Agent"] == "Ruby"
         request["User-Agent"] = user_agent
       end
-
+      
+      if request.body
+        request.body = serializeRequest(request)
+      end
+      
       uri = URI(@environment.base_url)
       Net::HTTP.start(uri.host, uri.port, :use_ssl => uri.scheme == 'https') do |http|
         _parse_response(http.request(request))
       end
     end
-
-    def parse_response_body(body, headers)
-      body
+    
+    def serializeRequest(request)
+      request.body
     end
-
+    
+    def deserializeResponse(responseBody, headers)
+      responseBody
+    end
+    
     def _parse_response(response)
       status_code = response.code
       body = response.body
 
       obj = OpenStruct.new({
         :status_code => status_code,
-        :result => parse_response_body(response.body, response.to_hash),
+        :result => deserializeResponse(response.body, response.to_hash),
         :headers => response.to_hash,
       })
 
