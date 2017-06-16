@@ -20,26 +20,32 @@ module BraintreeHttp
     end
 
     def execute(request)
+      if !request.has_key? "headers"
+        request["headers"] = {}
+      end
+      
       @injectors.each do |injector|
         injector.inject(request)
       end
 
-      if !request["User-Agent"] || request["User-Agent"] == "Ruby"
-        request["User-Agent"] = user_agent
+      if !request["headers"]["User-Agent"] || request["headers"]["User-Agent"] == "Ruby"
+        request["headers"]["User-Agent"] = user_agent
       end
       
-      if request.body
-        request.body = serializeRequest(request)
+      httpRequest = Net::HTTPGenericRequest.new(request["method"], true, true, request["path"], request["headers"])
+      
+      if request.has_key? "body"
+        httpRequest.body = serializeRequest(request)
       end
       
       uri = URI(@environment.base_url)
       Net::HTTP.start(uri.host, uri.port, :use_ssl => uri.scheme == 'https') do |http|
-        _parse_response(http.request(request))
+        _parse_response(http.request(httpRequest))
       end
     end
     
     def serializeRequest(request)
-      request.body
+      request["body"]
     end
     
     def deserializeResponse(responseBody, headers)
