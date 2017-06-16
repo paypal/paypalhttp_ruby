@@ -15,31 +15,31 @@ describe HttpClient do
 
     class CustomInjector < Injector
       def inject(request)
-        request["headers"]["Some-Key"] = "Some Value"
+        request.headers["Some-Key"] = "Some Value"
       end
     end
 
     http_client.add_injector(CustomInjector.new)
-    req = {"method" => "GET", "path" => "/"}
+    req = OpenStruct.new({:verb => "GET", :path => "/"})
 
     stub_request(:any, @environment.base_url)
 
     http_client.execute(req)
 
-    expect(req["headers"]["Some-Key"]).to eq("Some Value")
+    expect(req.headers["Some-Key"]).to eq("Some Value")
   end
 
   it "sets User-Agent header in request if not set" do
     WebMock.enable!
 
     http_client = HttpClient.new(@environment)
-    req = {"method" => "GET", "path" => "/"}
+    req = OpenStruct.new({:verb => "GET", :path => "/"})
 
     stub_request(:any, @environment.base_url)
 
     http_client.execute(req)
 
-    expect(req["headers"]["User-Agent"]).to eq("BraintreeHttp-Ruby HTTP/1.1")
+    expect(req.headers["User-Agent"]).to eq("BraintreeHttp-Ruby HTTP/1.1")
   end
 
   it "does not overwrite User-Agent header if set" do
@@ -47,13 +47,13 @@ describe HttpClient do
 
     http_client = HttpClient.new(@environment)
 
-    req = {"method" => "GET", "path" => "/", "headers" => {"User-Agent" => "Not Ruby Http/1.1"}}
+    req = OpenStruct.new({:verb => "GET", :path => "/", :headers => {"User-Agent" => "Not Ruby Http/1.1"}})
 
     stub_request(:any, @environment.base_url)
 
     http_client.execute(req)
 
-    expect(req["headers"]["User-Agent"]).to eq("Not Ruby Http/1.1")
+    expect(req.headers["User-Agent"]).to eq("Not Ruby Http/1.1")
   end
 
   it "uses body in request" do
@@ -61,8 +61,9 @@ describe HttpClient do
 
     stub_request(:delete, @environment.base_url + "/path")
 
-    req = {"method" => "DELETE", "path" => "/path"}
-    req["body"] = "I want to delete the thing"
+    req = OpenStruct.new({:verb => "DELETE", :path => "/path"})
+    
+    req.body = "I want to delete the thing"
 
     http_client = HttpClient.new(@environment)
 
@@ -82,7 +83,7 @@ describe HttpClient do
                 headers: { 'Some-Weird-Header' => "Some weird value" })
 
     http_client = HttpClient.new(@environment)
-    req = {"method" => "GET", "path" => "/"}
+    req = OpenStruct.new({:verb => "GET", :path => "/"})
 
     resp = http_client.execute(req)
 
@@ -106,7 +107,7 @@ describe HttpClient do
                 headers: { 'Some-Weird-Header' => "Some weird value" })
 
     http_client = HttpClient.new(@environment)
-    req = {"method" => "GET", "path" => URI(@environment.base_url)}
+    req = OpenStruct.new({:verb => "GET", :path => URI(@environment.base_url)})
 
     begin
       resp = http_client.execute(req)
@@ -128,7 +129,7 @@ describe HttpClient do
       .to_return(body: return_data, status: 200)
 
     http_client = HttpClient.new(@environment)
-    req = {"method" => "GET", "path" => "/v1/api"}
+    req = OpenStruct.new({:verb => "GET", :path => "/v1/api"})
 
     resp = http_client.execute(req)
     expect(resp.status_code).to eq("200")
@@ -157,7 +158,7 @@ describe HttpClient do
     stub_request(:get, @environment.base_url + "/v1/api")
       .to_return(body: JSON.generate(return_data), status: 200, headers: {"Content-Type" => "application/json"})
 
-    req = {"method" => "GET", "path" => "/v1/api"}
+    req = OpenStruct.new({:verb => "GET", :path => "/v1/api"})
 
     resp = http_client.execute(req)
 
