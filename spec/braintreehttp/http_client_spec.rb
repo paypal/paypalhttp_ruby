@@ -62,7 +62,7 @@ describe HttpClient do
     stub_request(:delete, @environment.base_url + "/path")
 
     req = OpenStruct.new({:verb => "DELETE", :path => "/path"})
-    
+
     req.body = "I want to delete the thing"
 
     http_client = HttpClient.new(@environment)
@@ -164,6 +164,47 @@ describe HttpClient do
 
     expect(resp.status_code).to eq("200")
     expect(resp.result.key).to eq("value")
+  end
+
+  it "encodes multipart/form-data when a file is present without body" do
+    WebMock.enable!
+
+    stub_request(:any, @environment.base_url + "/v1/api")
+
+    http_client = HttpClient.new(@environment)
+    file = File.new("README.md", "r")
+    req = OpenStruct.new({:verb => "POST", :path => "/v1/api", :file => file})
+
+    resp = http_client.execute(req)
+
+    assert_requested(:post, @environment.base_url + "/v1/api") { |requested|
+      requested.body.include? "Content-Disposition: form-data; name=\"file\"; filename=\"README.md\""
+    }
+  end
+
+  it "encodes multipart/form-data when a file is present with body" do
+    WebMock.enable!
+
+    stub_request(:any, @environment.base_url + "/v1/api")
+
+    http_client = HttpClient.new(@environment)
+    file = File.new("README.md", "r")
+
+    req = OpenStruct.new({:verb => "POST", :path => "/v1/api", :file => file})
+    req.body = {
+      :key => "value",
+      :another_key => 1013
+    }
+
+    resp = http_client.execute(req)
+
+    assert_requested(:post, @environment.base_url + "/v1/api") { |requested|
+      requested.body.include? "Content-Disposition: form-data; name=\"file\"; filename=\"README.md\""
+      requested.body.include? "Content-Disposition: form-data; name=\"key\""
+      requested.body.include? "value"
+      requested.body.include? "Content-Disposition: form-data; name=\"another_key\""
+      requested.body.include? "1013"
+    }
   end
 end
 
