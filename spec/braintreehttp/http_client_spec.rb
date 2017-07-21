@@ -206,5 +206,40 @@ describe HttpClient do
       requested.body.include? "1013"
     }
   end
+
+	it "does not error if no file or body present on a request class" do
+		class Request
+
+			attr_accessor :path, :body, :headers, :verb, :file
+
+			def initialize()
+				@headers = {}
+				@verb = "POST"
+				@path = "/v1/api"
+			end
+
+			def requestBody(body)
+				@body = body
+			end
+
+			def setFile(file)
+				@file = file
+			end
+
+		end
+
+		WebMock.enable!
+
+		stub_request(:any, @environment.base_url + "/v1/api")
+    http_client = HttpClient.new(@environment)
+
+		begin
+			http_client.execute(Request.new)
+		rescue Exception => e
+			fail e.message
+		end
+
+	end
+
 end
 
