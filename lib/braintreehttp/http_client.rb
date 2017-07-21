@@ -21,6 +21,14 @@ module BraintreeHttp
       @injectors << inj
     end
 
+		def has_file(request)
+			request.respond_to?(:file) and request.file
+		end
+
+		def has_body(request)
+			request.respond_to?(:body) and request.body
+		end
+
     def execute(request)
       if !request.headers
         request.headers = {}
@@ -36,7 +44,7 @@ module BraintreeHttp
 
       httpRequest = Net::HTTPGenericRequest.new(request.verb, true, true, request.path, request.headers)
 
-      if request.body && !request.file
+      if has_body(request) and !has_file(request)
         if request.body.is_a? String
           httpRequest.body = request.body
         else
@@ -44,7 +52,7 @@ module BraintreeHttp
 				end
 			end
 
-			if request.file # encode with multipart/form-data
+			if has_file(request) # encode with multipart/form-data
 				boundary = DateTime.now.strftime("%Q")
 				httpRequest.set_content_type("multipart/form-data; boundary=#{boundary}")
 
