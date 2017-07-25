@@ -173,12 +173,13 @@ describe HttpClient do
 
     http_client = HttpClient.new(@environment)
     file = File.new("README.md", "r")
-    req = OpenStruct.new({:verb => "POST", :path => "/v1/api", :file => file})
+    req = OpenStruct.new({:verb => "POST", :path => "/v1/api", :headers => {"Content-Type" => "multipart/form-data"}})
+    req.body = {:readme => file}
 
     resp = http_client.execute(req)
 
     assert_requested(:post, @environment.base_url + "/v1/api") { |requested|
-      requested.body.include? "Content-Disposition: form-data; name=\"file\"; filename=\"README.md\""
+      requested.body.include? "Content-Disposition: form-data; name=\"readme\"; filename=\"README.md\""
     }
   end
 
@@ -190,16 +191,17 @@ describe HttpClient do
     http_client = HttpClient.new(@environment)
     file = File.new("README.md", "r")
 
-    req = OpenStruct.new({:verb => "POST", :path => "/v1/api", :file => file})
+    req = OpenStruct.new({:verb => "POST", :path => "/v1/api", :headers => {"Content-Type" => "multipart/form-data"}})
     req.body = {
       :key => "value",
-      :another_key => 1013
+      :another_key => 1013,
+      :readme => file,
     }
 
     resp = http_client.execute(req)
 
     assert_requested(:post, @environment.base_url + "/v1/api") { |requested|
-      requested.body.include? "Content-Disposition: form-data; name=\"file\"; filename=\"README.md\""
+      requested.body.include? "Content-Disposition: form-data; name=\"readme\"; filename=\"README.md\""
       requested.body.include? "Content-Disposition: form-data; name=\"key\""
       requested.body.include? "value"
       requested.body.include? "Content-Disposition: form-data; name=\"another_key\""

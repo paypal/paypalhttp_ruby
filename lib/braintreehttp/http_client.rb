@@ -21,13 +21,9 @@ module BraintreeHttp
       @injectors << inj
     end
 
-		def has_file(request)
-			request.respond_to?(:file) and request.file
-		end
-
-		def has_body(request)
-			request.respond_to?(:body) and request.body
-		end
+    def has_body(request)
+      request.respond_to?(:body) and request.body
+    end
 
     def execute(request)
       if !request.headers
@@ -44,30 +40,31 @@ module BraintreeHttp
 
       httpRequest = Net::HTTPGenericRequest.new(request.verb, true, true, request.path, request.headers)
 
-      if has_body(request) and !has_file(request)
+      content_type = request.headers["Content-Type"]
+      if content_type && content_type.start_with?("multipart/")
+        boundary = DateTime.now.strftime("%Q")
+        httpRequest.set_content_type("multipart/form-data; boundary=#{boundary}")
+
+        form_params = []
+        request.body.each do |k, v|
+          if v.is_a? File
+            form_params.push(_add_file_part(k, v))
+          else
+            form_params.push(_add_form_field(k, v))
+          end
+        end
+
+        httpRequest.body = form_params.collect {|p| "--" + boundary + "#{LINE_FEED}" + p}.join("") + "--" + boundary + "--"
+      elsif has_body(request)
         if request.body.is_a? String
           httpRequest.body = request.body
         else
           httpRequest.body = serializeRequest(request)
-				end
-			end
-
-			if has_file(request) # encode with multipart/form-data
-				boundary = DateTime.now.strftime("%Q")
-				httpRequest.set_content_type("multipart/form-data; boundary=#{boundary}")
-
-        form_params = []
-        if request.body
-          request.body.each do |k, v|
-            form_params.push(_add_form_field(k, v))
-          end
         end
-				form_params.push(_add_file_part("file", request.file))
-        httpRequest.body = form_params.collect {|p| "--" + boundary + "#{LINE_FEED}" + p}.join("") + "--" + boundary + "--"
-			end
+      end
 
-			uri = URI(@environment.base_url)
-			Net::HTTP.start(uri.host, uri.port, :use_ssl => uri.scheme == 'https') do |http|
+      uri = URI(@environment.base_url)
+      Net::HTTP.start(uri.host, uri.port, :use_ssl => uri.scheme == 'https') do |http|
         _parse_response(http.request(httpRequest))
       end
     end
@@ -76,19 +73,19 @@ module BraintreeHttp
       request.body
     end
 
-		def deserializeResponse(responseBody, headers)
-			responseBody
-		end
+    def deserializeResponse(responseBody, headers)
+      responseBody
+    end
 
-		def _add_form_field(key, value)
-			return "Content-Disposition: form-data; name=\"#{key}\"#{LINE_FEED}#{LINE_FEED}#{value}#{LINE_FEED}"
-		end
+    def _add_form_field(key, value)
+      return "Content-Disposition: form-data; name=\"#{key}\"#{LINE_FEED}#{LINE_FEED}#{value}#{LINE_FEED}"
+    end
 
-		def _add_file_part(key, file)
-			mime_type = _mime_type_for_file_name(file.path)
-			return "Content-Disposition: form-data; name=\"#{key}\"; filename=\"#{file.path}\"#{LINE_FEED}" +
-				"Content-Type: #{mime_type}#{LINE_FEED}#{LINE_FEED}#{file.read}#{LINE_FEED}"
-		end
+    def _add_file_part(key, file)
+      mime_type = _mime_type_for_file_name(file.path)
+      return "Content-Disposition: form-data; name=\"#{key}\"; filename=\"#{File.basename(file.path)}\"#{LINE_FEED}" +
+        "Content-Type: #{mime_type}#{LINE_FEED}#{LINE_FEED}#{file.read}#{LINE_FEED}"
+    end
 
     def _mime_type_for_file_name(filename)
       file_extension = File.extname(filename).strip.downcase[1..-1]
@@ -103,9 +100,8 @@ module BraintreeHttp
       end
     end
 
-		def _parse_response(response)
+    def _parse_response(response)
       status_code = response.code
-      body = response.body
 
       obj = OpenStruct.new({
         :status_code => status_code,
