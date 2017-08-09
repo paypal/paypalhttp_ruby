@@ -68,7 +68,7 @@ describe HttpClient do
     http_client = HttpClient.new(@environment)
 
     resp = http_client.execute(req)
-    expect(resp.status_code).to eq("200")
+    expect(resp.status_code).to eq(200)
 
     assert_requested(:delete, @environment.base_url + "/path") { |requested| requested.body == "I want to delete the thing" }
   end
@@ -76,19 +76,24 @@ describe HttpClient do
   it "parses 200 level response" do
     WebMock.enable!
 
-    return_data = "some data from the server"
+    return_data = JSON.generate({
+      :some_key => "value"
+    })
 
     stub_request(:any, @environment.base_url).
       to_return(body: return_data, status: 204,
-                headers: { 'Some-Weird-Header' => "Some weird value" })
+                headers: {
+        'Some-Weird-Header' => 'Some weird value',
+        'Content-Type' => 'application/json'
+    })
 
     http_client = HttpClient.new(@environment)
     req = OpenStruct.new({:verb => "GET", :path => "/"})
 
     resp = http_client.execute(req)
 
-    expect(resp.status_code).to eq("204")
-    expect(resp.result).to eq(return_data)
+    expect(resp.status_code).to eq(204)
+    expect(resp.result.some_key).to eq('value')
     expect(resp.headers["Some-Weird-Header".downcase]).to eq(["Some weird value"])
   end
 
@@ -104,7 +109,10 @@ describe HttpClient do
 
     stub_request(:any, @environment.base_url).
       to_return(body: json, status: 400,
-                headers: { 'Some-Weird-Header' => "Some weird value" })
+                headers: {
+        'Some-Weird-Header' => 'Some weird value',
+        'Content-Type' => 'application/json'
+      })
 
     http_client = HttpClient.new(@environment)
     req = OpenStruct.new({:verb => "GET", :path => URI(@environment.base_url)})
@@ -114,8 +122,9 @@ describe HttpClient do
       fail
     rescue => e
       resp = e
-      expect(resp.status_code).to eq("400")
-      expect(resp.result).to eq(json)
+      expect(resp.status_code).to eq(400)
+      expect(resp.result.error).to eq('error message')
+      expect(resp.result.another_key).to eq(1013)
       expect(resp.headers["Some-Weird-Header".downcase]).to eq(["Some weird value"])
     end
   end
@@ -123,17 +132,32 @@ describe HttpClient do
   it "makes request when only a path is specified" do
     WebMock.enable!
 
-    return_data = "some data"
-
     stub_request(:any, @environment.base_url + "/v1/api")
-      .to_return(body: return_data, status: 200)
+      .to_return(status: 200)
 
     http_client = HttpClient.new(@environment)
     req = OpenStruct.new({:verb => "GET", :path => "/v1/api"})
 
     resp = http_client.execute(req)
-    expect(resp.status_code).to eq("200")
-    expect(resp.result).to eq(return_data)
+    expect(resp.status_code).to eq(200)
+  end
+
+  it 'uses encoder to serialize requests by default' do
+    WebMock.enable!
+
+    return_data = {
+      :key => "value"
+    }
+
+    http_client = HttpClient.new(@environment)
+    stub_request(:get, @environment.base_url + "/v1/api")
+      .to_return(body: JSON.generate(return_data), status: 200, headers: {"Content-Type" => "application/json"})
+
+    req = OpenStruct.new({:verb => "GET", :path => "/v1/api"})
+    resp = http_client.execute(req)
+
+    expect(resp.status_code).to eq(200)
+    expect(resp.result.key).to eq('value')
   end
 
   it "allows subclasses to modify response body" do
@@ -144,9 +168,9 @@ describe HttpClient do
     }
 
     class JSONHttpClient < HttpClient
-      def deserializeResponse(body, headers)
+      def deserialize_response(body, headers)
         if headers["content-type"].include? "application/json"
-          return OpenStruct.new(JSON.parse(body))
+          return 'something else'
         end
 
         body
@@ -162,8 +186,8 @@ describe HttpClient do
 
     resp = http_client.execute(req)
 
-    expect(resp.status_code).to eq("200")
-    expect(resp.result.key).to eq("value")
+    expect(resp.status_code).to eq(200)
+    expect(resp.result).to eq('something else')
   end
 
   it "encodes multipart/form-data when a file is present without body" do
