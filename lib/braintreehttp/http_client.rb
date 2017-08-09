@@ -1,4 +1,3 @@
-require 'json'
 require 'ostruct'
 
 module BraintreeHttp
@@ -11,6 +10,7 @@ module BraintreeHttp
     def initialize(environment)
       @environment = environment
       @injectors = []
+      @encoder = Encoder.new
     end
 
     def user_agent
@@ -59,7 +59,7 @@ module BraintreeHttp
         if request.body.is_a? String
           httpRequest.body = request.body
         else
-          httpRequest.body = serializeRequest(request)
+          httpRequest.body = serialize_request(request)
         end
       end
 
@@ -69,12 +69,12 @@ module BraintreeHttp
       end
     end
 
-    def serializeRequest(request)
-      request.body
+    def serialize_request(request)
+      @encoder.serialize_request(request)
     end
 
-    def deserializeResponse(responseBody, headers)
-      responseBody
+    def deserialize_response(response_body, headers)
+      @encoder.deserialize_response(response_body, headers)
     end
 
     def _add_form_field(key, value)
@@ -101,15 +101,28 @@ module BraintreeHttp
     end
 
     def _parse_response(response)
-      status_code = response.code
+      status_code = response.code.to_i
+
+      result = response.body
+      headers = response.to_hash
+      if result && !result.empty?
+        deserialized = deserialize_response(response.body, headers)
+        if deserialized.is_a? String
+          result = deserialized
+        else
+          result = OpenStruct.new(deserialized)
+        end
+      else
+        result = nil
+      end
 
       obj = OpenStruct.new({
         :status_code => status_code,
-        :result => deserializeResponse(response.body, response.to_hash),
+        :result => result,
         :headers => response.to_hash,
       })
 
-      if status_code.to_i >= 200 and status_code.to_i < 300
+      if status_code >= 200 and status_code < 300
         return obj
       elsif
         raise ServiceIOError.new(obj.status_code, obj.result, obj.headers)

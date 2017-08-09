@@ -7,4 +7,10 @@ module BraintreeHttp
       @headers = headers
     end
   end
+
+  class UnsupportedEncodingError < IOError
+    def initialize(msg)
+      super(msg)
+    end
+  end
 end
