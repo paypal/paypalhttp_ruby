@@ -1,4 +1,5 @@
 require 'ostruct'
+require 'net/http'
 
 module BraintreeHttp
 
