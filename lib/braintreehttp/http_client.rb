@@ -1,5 +1,6 @@
 require 'ostruct'
 require 'net/http'
+require 'date'
 
 module BraintreeHttp
 
