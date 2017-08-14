@@ -13,13 +13,10 @@ describe HttpClient do
 
     http_client = HttpClient.new(@environment)
 
-    class CustomInjector < Injector
-      def inject(request)
-        request.headers["Some-Key"] = "Some Value"
-      end
+    http_client.add_injector do |request|
+      request.headers["Some-Key"] = "Some Value"
     end
 
-    http_client.add_injector(CustomInjector.new)
     req = OpenStruct.new({:verb => "GET", :path => "/"})
 
     stub_request(:any, @environment.base_url)

@@ -19,8 +19,8 @@ module BraintreeHttp
       "BraintreeHttp-Ruby HTTP/1.1"
     end
 
-    def add_injector(inj)
-      @injectors << inj
+    def add_injector(&block)
+      @injectors << block
     end
 
     def has_body(request)
@@ -33,7 +33,7 @@ module BraintreeHttp
       end
 
       @injectors.each do |injector|
-        injector.inject(request)
+        injector.call(request)
       end
 
       if !request.headers["User-Agent"] || request.headers["User-Agent"] == "Ruby"
