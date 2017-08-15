@@ -127,7 +127,7 @@ module BraintreeHttp
       if status_code >= 200 and status_code < 300
         return obj
       elsif
-        raise ServiceIOError.new(obj.status_code, obj.result, obj.headers)
+        raise HttpError.new(obj.status_code, obj.result, obj.headers)
       end
     end
   end
