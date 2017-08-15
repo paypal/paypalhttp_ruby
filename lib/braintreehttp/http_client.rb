@@ -109,7 +109,7 @@ module BraintreeHttp
       headers = response.to_hash
       if result && !result.empty?
         deserialized = deserialize_response(response.body, headers)
-        if deserialized.is_a? String
+        if deserialized.is_a?(String) || deserialized.is_a?(Array)
           result = deserialized
         else
           result = OpenStruct.new(deserialized)

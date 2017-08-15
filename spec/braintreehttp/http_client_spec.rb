@@ -187,6 +187,23 @@ describe HttpClient do
     expect(resp.result).to eq('something else')
   end
 
+  it 'handles json array result' do
+    WebMock.enable!
+
+    return_data = ["one", "two"]
+
+    http_client = HttpClient.new(@environment)
+
+    stub_request(:get, @environment.base_url + "/v1/api")
+      .to_return(body: JSON.generate(return_data), status: 200, headers: {"Content-Type" => "application/json"})
+
+    req = OpenStruct.new({:verb => "GET", :path => "/v1/api"})
+
+    resp = http_client.execute(req)
+
+    expect(resp.result).to eq(return_data)
+  end
+
   it "encodes multipart/form-data when a file is present without body" do
     WebMock.enable!
 
