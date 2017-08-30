@@ -46,7 +46,7 @@ The `HttpClient` executes its injectors in a first-in, first-out order, before e
 ```ruby
 let client = new HttpClient(env);
 client.add_injector do |request|
-  puts req 
+  puts req
 end
 
 client.add_injector do |request|
@@ -64,7 +64,7 @@ end
 begin
   resp = http_client.execute(req)
 rescue => e
-  if e.is_a? HttpError 
+  if e.is_a? HttpError
     # Inspect this exception for details
     status_code = e.status_code;
   end
@@ -74,3 +74,8 @@ end
 ### Serializer
 (De)Serialization of request and response data is done by instances of [`Encoder`](./lib/braintreehttp/encoder.rb). BraintreeHttp currently supports `json` encoding out of the box.
 
+## License
+BraintreeHttp-Ruby is open source and available under the MIT license. See the [LICENSE](./LICENSE) file for more information.
+
+## Contributing
+Pull requests and issues are welcome. Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for more details.
