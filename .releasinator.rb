@@ -58,7 +58,7 @@ end
 configatron.update_version_method = method(:update_version_method)
 
 def clean
-  CommandProcessor.command("rm braintreehttp-*.gem")
+  CommandProcessor.command("rm -f braintreehttp-*.gem")
 end
 
 def build_method

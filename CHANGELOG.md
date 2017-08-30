@@ -1,5 +1,6 @@
 ## 0.1.5
 * Use releasinator to automate releases.
+* Fix releasinator script.
 
 ## 0.1.4
 * Use releasinator to automate releases.
