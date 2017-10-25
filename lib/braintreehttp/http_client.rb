@@ -7,7 +7,7 @@ module BraintreeHttp
   LINE_FEED = "\r\n"
 
   class HttpClient
-    attr_accessor :environment
+    attr_accessor :environment, :encoder
 
     def initialize(environment)
       @environment = environment
@@ -40,34 +40,15 @@ module BraintreeHttp
         request.headers["User-Agent"] = user_agent
       end
 
-      httpRequest = Net::HTTPGenericRequest.new(request.verb, true, true, request.path, request.headers)
+      http_request = Net::HTTPGenericRequest.new(request.verb, true, true, request.path, request.headers)
 
-      content_type = request.headers["Content-Type"]
-      if content_type && content_type.start_with?("multipart/")
-        boundary = DateTime.now.strftime("%Q")
-        httpRequest.set_content_type("multipart/form-data; boundary=#{boundary}")
-
-        form_params = []
-        request.body.each do |k, v|
-          if v.is_a? File
-            form_params.push(_add_file_part(k, v))
-          else
-            form_params.push(_add_form_field(k, v))
-          end
-        end
-
-        httpRequest.body = form_params.collect {|p| "--" + boundary + "#{LINE_FEED}" + p}.join("") + "--" + boundary + "--"
-      elsif has_body(request)
-        if request.body.is_a? String
-          httpRequest.body = request.body
-        else
-          httpRequest.body = serialize_request(request)
-        end
+      if has_body(request)
+        http_request.body = serialize_request(request)
       end
 
       uri = URI(@environment.base_url)
       Net::HTTP.start(uri.host, uri.port, :use_ssl => uri.scheme == 'https') do |http|
-        _parse_response(http.request(httpRequest))
+        _parse_response(http.request(http_request))
       end
     end
 
@@ -77,29 +58,6 @@ module BraintreeHttp
 
     def deserialize_response(response_body, headers)
       @encoder.deserialize_response(response_body, headers)
-    end
-
-    def _add_form_field(key, value)
-      return "Content-Disposition: form-data; name=\"#{key}\"#{LINE_FEED}#{LINE_FEED}#{value}#{LINE_FEED}"
-    end
-
-    def _add_file_part(key, file)
-      mime_type = _mime_type_for_file_name(file.path)
-      return "Content-Disposition: form-data; name=\"#{key}\"; filename=\"#{File.basename(file.path)}\"#{LINE_FEED}" +
-        "Content-Type: #{mime_type}#{LINE_FEED}#{LINE_FEED}#{file.read}#{LINE_FEED}"
-    end
-
-    def _mime_type_for_file_name(filename)
-      file_extension = File.extname(filename).strip.downcase[1..-1]
-      if file_extension == "jpeg" || file_extension == "jpg"
-        return "image/jpeg"
-      elsif file_extension == "png"
-        return "image/png"
-      elsif file_extension == "pdf"
-        return "application/pdf"
-      else
-        return "application/octet-stream"
-      end
     end
 
     def _parse_response(response)
