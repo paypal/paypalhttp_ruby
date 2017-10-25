@@ -163,36 +163,6 @@ describe HttpClient do
     expect(resp.result.key).to eq('value')
   end
 
-  it "allows subclasses to modify response body" do
-    WebMock.enable!
-
-    return_data = {
-      :key => "value"
-    }
-
-    class JSONHttpClient < HttpClient
-      def deserialize_response(body, headers)
-        if headers["content-type"].include? "application/json"
-          return 'something else'
-        end
-
-        body
-      end
-    end
-
-    http_client = JSONHttpClient.new(@environment)
-
-    stub_request(:get, @environment.base_url + "/v1/api")
-      .to_return(body: JSON.generate(return_data), status: 200, headers: {"Content-Type" => "application/json"})
-
-    req = OpenStruct.new({:verb => "GET", :path => "/v1/api"})
-
-    resp = http_client.execute(req)
-
-    expect(resp.status_code).to eq(200)
-    expect(resp.result).to eq('something else')
-  end
-
   it 'handles json array result' do
     WebMock.enable!
 

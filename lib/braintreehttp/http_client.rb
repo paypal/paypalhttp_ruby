@@ -43,7 +43,7 @@ module BraintreeHttp
       http_request = Net::HTTPGenericRequest.new(request.verb, true, true, request.path, request.headers)
 
       if has_body(request)
-        http_request.body = serialize_request(request)
+        http_request.body = @encoder.serialize_request(request)
       end
 
       uri = URI(@environment.base_url)
@@ -52,21 +52,13 @@ module BraintreeHttp
       end
     end
 
-    def serialize_request(request)
-      @encoder.serialize_request(request)
-    end
-
-    def deserialize_response(response_body, headers)
-      @encoder.deserialize_response(response_body, headers)
-    end
-
     def _parse_response(response)
       status_code = response.code.to_i
 
       result = response.body
       headers = response.to_hash
       if result && !result.empty?
-        deserialized = deserialize_response(response.body, headers)
+        deserialized = @encoder.deserialize_response(response.body, headers)
         if deserialized.is_a?(String) || deserialized.is_a?(Array)
           result = deserialized
         else
