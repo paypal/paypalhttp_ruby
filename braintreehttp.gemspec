@@ -1,10 +1,12 @@
+require_relative './lib/braintreehttp/version'
+
 $:.push File.expand_path("../lib", __FILE__)
 
 Gem::Specification.new do |s|
   s.name = "braintreehttp"
   s.summary = "BraintreeHttp Client Library"
   s.description = "Used for generated API clients"
-  s.version = "0.1.5"
+  s.version = VERSION
   s.license = "MIT"
   s.author = "Braintree"
   s.email = "code@getbraintree.com"
