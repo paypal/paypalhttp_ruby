@@ -47,11 +47,8 @@ configatron.custom_validation_methods = [
 
 # Update version, build, and publish to rubygems
 def update_version_method(version, semver_type)
-  semver_regex = /  s\.version = "d+.d+.d+"$/
-  contents = File.read("braintreehttp.gemspec")
-  contents = contents.gsub(semver_regex, "  version = \"#{version}\"")
-  File.open("braintreehttp.gemspec", "w") do |f|
-    f << contents
+  File.open("lib/braintreehttp/version.rb", "w") do |f|
+    f <<  "VERSION = \"#{version}\""
   end
 end
 
