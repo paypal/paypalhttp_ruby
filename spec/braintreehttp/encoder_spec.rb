@@ -36,6 +36,32 @@ describe Encoder do
       expect(Encoder.new.serialize_request(req)).to eq("some text")
     end
 
+    it 'serializes the request when content-type == multipart/form-data' do
+      http_client = HttpClient.new(@environment)
+      file = File.new("README.md", "r")
+      req = OpenStruct.new({
+        :verb => "POST", 
+        :path => "/v1/api", 
+        :headers => {
+          "Content-Type" => "multipart/form-data"
+        },
+        :body => {
+          :key => "value",
+          :another_key => 1013,
+          :readme => file,
+        }
+      })
+
+      serialized = Encoder.new.serialize_request(req)
+
+      expect(serialized).to include("Content-Disposition: form-data; name=\"readme\"; filename=\"README.md\"")
+      expect(serialized).to include("Content-Disposition: form-data; name=\"readme\"; filename=\"README.md\"")
+      expect(serialized).to include("Content-Disposition: form-data; name=\"key\"")
+      expect(serialized).to include("value")
+      expect(serialized).to include("Content-Disposition: form-data; name=\"another_key\"")
+      expect(serialized).to include("1013")
+    end
+
     it 'throws when content-type is not application/json' do
       req = OpenStruct.new({
         :headers  => {

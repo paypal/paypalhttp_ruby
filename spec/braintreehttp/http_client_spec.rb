@@ -58,7 +58,13 @@ describe HttpClient do
 
     stub_request(:delete, @environment.base_url + "/path")
 
-    req = OpenStruct.new({:verb => "DELETE", :path => "/path"})
+    req = OpenStruct.new({
+      :verb => "DELETE", 
+      :path => "/path",
+      :headers => {
+        "Content-Type" => "text/plain"
+      }
+    })
 
     req.body = "I want to delete the thing"
 
@@ -202,49 +208,6 @@ describe HttpClient do
     resp = http_client.execute(req)
 
     expect(resp.result).to eq(return_data)
-  end
-
-  it "encodes multipart/form-data when a file is present without body" do
-    WebMock.enable!
-
-    stub_request(:any, @environment.base_url + "/v1/api")
-
-    http_client = HttpClient.new(@environment)
-    file = File.new("README.md", "r")
-    req = OpenStruct.new({:verb => "POST", :path => "/v1/api", :headers => {"Content-Type" => "multipart/form-data"}})
-    req.body = {:readme => file}
-
-    resp = http_client.execute(req)
-
-    assert_requested(:post, @environment.base_url + "/v1/api") { |requested|
-      requested.body.include? "Content-Disposition: form-data; name=\"readme\"; filename=\"README.md\""
-    }
-  end
-
-  it "encodes multipart/form-data when a file is present with body" do
-    WebMock.enable!
-
-    stub_request(:any, @environment.base_url + "/v1/api")
-
-    http_client = HttpClient.new(@environment)
-    file = File.new("README.md", "r")
-
-    req = OpenStruct.new({:verb => "POST", :path => "/v1/api", :headers => {"Content-Type" => "multipart/form-data"}})
-    req.body = {
-      :key => "value",
-      :another_key => 1013,
-      :readme => file,
-    }
-
-    resp = http_client.execute(req)
-
-    assert_requested(:post, @environment.base_url + "/v1/api") { |requested|
-      requested.body.include? "Content-Disposition: form-data; name=\"readme\"; filename=\"README.md\""
-      requested.body.include? "Content-Disposition: form-data; name=\"key\""
-      requested.body.include? "value"
-      requested.body.include? "Content-Disposition: form-data; name=\"another_key\""
-      requested.body.include? "1013"
-    }
   end
 
 	it "does not error if no file or body present on a request class" do
