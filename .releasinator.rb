@@ -1,14 +1,9 @@
 configatron.product_name = "test product"
+require_relative './lib/braintreehttp/version'
 
 # Custom validations
 def get_package_version
-  File.open("braintreehttp.gemspec", 'r') do |f|
-		f.each_line do |line|
-      if line.match (/s\.version = "\d+.\d+.\d+"$/)
-        return line.strip.split('"')[1]
-			end
-		end
-	end
+  VERSION
 end
 
 def validate_version_match
