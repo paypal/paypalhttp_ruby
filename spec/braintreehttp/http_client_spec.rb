@@ -26,6 +26,26 @@ describe HttpClient do
     expect(req.headers["Some-Key"]).to eq("Some Value")
   end
 
+  it "uses method injector to modify request" do
+    WebMock.enable!
+
+    http_client = HttpClient.new(@environment)
+
+    def _inj(req)
+      req.headers["Some-Key"] = "Some Value"
+    end
+
+    http_client.add_injector(&method(:_inj))
+
+    req = OpenStruct.new({:verb => "GET", :path => "/"})
+
+    stub_request(:any, @environment.base_url)
+
+    http_client.execute(req)
+
+    expect(req.headers["Some-Key"]).to eq("Some Value")
+  end
+
   it "sets User-Agent header in request if not set" do
     WebMock.enable!
 
