@@ -1,3 +1,6 @@
+## 0.3.0
+* Add Form encoder.
+
 ## 0.2.0
 * Remove serialize/deserialize methods in http client in favor of exposing encoder.
 * Move multipart serialization into separate encoder.
