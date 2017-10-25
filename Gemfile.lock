@@ -6,6 +6,7 @@ GEM
     colorize (0.8.1)
     commonmarker (0.14.15)
       ruby-enum (~> 0.5)
+    concurrent-ruby (1.0.5)
     configatron (4.5.1)
     crack (0.4.3)
       safe_yaml (~> 1.0.0)
@@ -14,14 +15,15 @@ GEM
       multipart-post (>= 1.2, < 3)
     github-markup (1.6.1)
     hashdiff (0.3.6)
-    i18n (0.8.6)
+    i18n (0.9.0)
+      concurrent-ruby (~> 1.0)
     json (1.8.6)
     multipart-post (2.0.0)
     octokit (4.7.0)
       sawyer (~> 0.8.0, >= 0.5.3)
     public_suffix (2.0.5)
     rake (12.0.0)
-    releasinator (0.7.1)
+    releasinator (0.7.6)
       colorize (~> 0.7)
       configatron (~> 4.5)
       json (~> 1.8)
@@ -61,7 +63,7 @@ PLATFORMS
 
 DEPENDENCIES
   rake
-  releasinator (= 0.7.1)
+  releasinator (= 0.7.6)
   rspec
   webmock
 
