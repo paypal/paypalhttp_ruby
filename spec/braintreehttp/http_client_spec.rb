@@ -23,7 +23,10 @@ describe HttpClient do
 
     http_client.execute(req)
 
-    expect(req.headers["Some-Key"]).to eq("Some Value")
+    assert_requested :get, "#{@environment.base_url}/", {
+      :headers => {'Some-Key' => 'Some Value'},
+      :times => 1
+    }
   end
 
   it "uses method injector to modify request" do
@@ -43,7 +46,10 @@ describe HttpClient do
 
     http_client.execute(req)
 
-    expect(req.headers["Some-Key"]).to eq("Some Value")
+    assert_requested :get, "#{@environment.base_url}/", {
+      :headers => {'Some-Key' => 'Some Value'},
+      :times => 1
+    }
   end
 
   it "sets User-Agent header in request if not set" do
@@ -56,7 +62,10 @@ describe HttpClient do
 
     http_client.execute(req)
 
-    expect(req.headers["User-Agent"]).to eq("BraintreeHttp-Ruby HTTP/1.1")
+    assert_requested :get, "#{@environment.base_url}/", {
+      :headers => {"User-Agent" => "BraintreeHttp-Ruby HTTP/1.1"},
+      :times => 1
+    }
   end
 
   it "does not overwrite User-Agent header if set" do
@@ -70,7 +79,24 @@ describe HttpClient do
 
     http_client.execute(req)
 
-    expect(req.headers["User-Agent"]).to eq("Not Ruby Http/1.1")
+    assert_requested :get, "#{@environment.base_url}/", {
+      :headers => {"User-Agent" => "Not Ruby Http/1.1"},
+      :times => 1
+    }
+  end
+
+  it "does not modify the original request" do
+    WebMock.enable!
+
+    http_client = HttpClient.new(@environment)
+
+    req = OpenStruct.new({:verb => "GET", :path => "/"})
+
+    stub_request(:any, @environment.base_url)
+
+    http_client.execute(req)
+
+    expect(req.headers).to be_nil
   end
 
   it "uses body in request" do

@@ -27,7 +27,15 @@ module BraintreeHttp
       request.respond_to?(:body) and request.body
     end
 
-    def execute(request)
+    def execute(req)
+      request = OpenStruct.new({
+        :verb => req.verb,
+        :path => req.path,
+        :headers => req.headers.clone,
+        :body => req.body,
+      })
+
+
       if !request.headers
         request.headers = {}
       end
