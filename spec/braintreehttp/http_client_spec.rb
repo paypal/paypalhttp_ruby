@@ -236,15 +236,6 @@ describe HttpClient do
 				@verb = "POST"
 				@path = "/v1/api"
 			end
-
-			def requestBody(body)
-				@body = body
-			end
-
-			def setFile(file)
-				@file = file
-			end
-
 		end
 
 		WebMock.enable!
@@ -257,8 +248,6 @@ describe HttpClient do
 		rescue Exception => e
 			fail e.message
 		end
-
 	end
-
 end
 

@@ -21,7 +21,7 @@ module BraintreeHttp
     end
 
     def content_type
-      /^multipart\/.*/
+      /multipart\/.*/
     end
 
     def _add_form_field(key, value)

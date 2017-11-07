@@ -9,7 +9,7 @@ module BraintreeHttp
     end
 
     def content_type
-      /^text\/.*/
+      /text\/.*/
     end
   end
 end

@@ -6,7 +6,7 @@ describe Encoder do
     it 'serializes the request when content-type == application/json' do
       req = OpenStruct.new({
         :headers  => {
-          "content-type" => "application/json"
+          "content-type" => "application/json; charset=utf8"
         },
         :body => {
           "string" => "value",
@@ -28,7 +28,7 @@ describe Encoder do
     it 'serializes the request when content-type == text/*' do
       req = OpenStruct.new({
         :headers  => {
-          "content-type" => "text/plain"
+          "content-type" => "text/plain; charset=utf8"
         },
         :body => "some text"
       })
@@ -39,10 +39,10 @@ describe Encoder do
     it 'serializes the request when content-type == multipart/form-data' do
       file = File.new("README.md", "r")
       req = OpenStruct.new({
-        :verb => "POST", 
-        :path => "/v1/api", 
+        :verb => "POST",
+        :path => "/v1/api",
         :headers => {
-          "Content-Type" => "multipart/form-data"
+          "Content-Type" => "multipart/form-data; charset=utf8"
         },
         :body => {
           :key => "value",
@@ -63,10 +63,10 @@ describe Encoder do
 
     it 'serializes the request when content-type == application/x-www-form-urlencoded' do
       req = OpenStruct.new({
-        :verb => "POST", 
-        :path => "/v1/api", 
+        :verb => "POST",
+        :path => "/v1/api",
         :headers => {
-          "Content-Type" => "application/x-www-form-urlencoded"
+          "Content-Type" => "application/x-www-form-urlencoded; charset=utf8"
         },
         :body => {
           :key => "value with a space",
@@ -78,10 +78,10 @@ describe Encoder do
       expect(serialized).to eq("key=value%20with%20a%20space&another_key=1013")
     end
 
-    it 'throws when content-type is not application/json' do
+    it 'throws when content-type is unsupported' do
       req = OpenStruct.new({
         :headers  => {
-          "content-type" => "not application/json"
+          "content-type" => "fake/content-type"
         },
         :body => { :string => "value" }
       })
@@ -96,10 +96,20 @@ describe Encoder do
 
       expect{Encoder.new.serialize_request(req)}.to raise_error(UnsupportedEncodingError, 'HttpRequest did not have Content-Type header set')
     end
+
+    it 'throws when conent-type undefined' do
+      req = OpenStruct.new({
+        :headers => {},
+        :body  => { :key => "value" }
+      })
+
+
+      expect{Encoder.new.serialize_request(req)}.to raise_error(UnsupportedEncodingError, 'HttpRequest did not have Content-Type header set')
+    end
   end
 
   describe 'deserialize_response' do
-    it 'throws when content-type not application/json' do
+    it 'throws when content-type unsupported' do
       body = '{"string":"value","number":1.23,"bool":true,"array":["one","two","three"],"nested":{"nested_string":"nested_value","nested_array":[1,2,3]}}'
       headers = {
         "content-type" => ["application/xml"]
@@ -112,6 +122,12 @@ describe Encoder do
       body = '{"string":"value","number":1.23,"bool":true,"array":["one","two","three"],"nested":{"nested_string":"nested_value","nested_array":[1,2,3]}}'
 
       expect{Encoder.new.deserialize_response(body, nil)}.to raise_error(UnsupportedEncodingError, 'HttpResponse did not have Content-Type header set')
+    end
+
+    it 'throws when content-type undefined' do
+      body = '{"string":"value","number":1.23,"bool":true,"array":["one","two","three"],"nested":{"nested_string":"nested_value","nested_array":[1,2,3]}}'
+
+      expect{Encoder.new.deserialize_response(body, {})}.to raise_error(UnsupportedEncodingError, 'HttpResponse did not have Content-Type header set')
     end
 
     it 'deserializes the response when content-type == application/json' do
@@ -137,6 +153,20 @@ describe Encoder do
       body = 'some text'
 
       expect(Encoder.new.deserialize_response(body, headers)).to eq('some text')
+    end
+
+    it 'throws when attempting to deserialize multipart/*' do
+      headers = {"content-type" => ["multipart/form-data"]}
+      body = 'some multipart encoded data here'
+
+      expect{Encoder.new.deserialize_response(body, headers)}.to raise_error(UnsupportedEncodingError, 'Multipart does not support deserialization')
+    end
+
+    it 'throws when attempting to deserialize application/x-www-form-urlencoded' do
+      headers = {"content-type" => ["application/x-www-form-urlencoded"]}
+      body = 'some multipart encoded data here'
+
+      expect{Encoder.new.deserialize_response(body, headers)}.to raise_error(UnsupportedEncodingError, 'FormEncoded does not support deserialization')
     end
   end
 end

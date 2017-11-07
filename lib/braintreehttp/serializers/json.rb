@@ -11,7 +11,7 @@ module BraintreeHttp
     end
 
     def content_type
-      /^application\/json$/
+      /application\/json/
     end
   end
 end
