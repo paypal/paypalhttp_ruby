@@ -28,13 +28,14 @@ module BraintreeHttp
     end
 
     def execute(req)
+      headers = req.headers || {}
+
       request = OpenStruct.new({
         :verb => req.verb,
         :path => req.path,
-        :headers => req.headers.clone,
+        :headers => headers.clone,
         :body => req.body,
       })
-
 
       if !request.headers
         request.headers = {}
