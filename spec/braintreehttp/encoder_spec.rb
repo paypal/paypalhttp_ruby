@@ -1,4 +1,6 @@
 require 'ostruct'
+require 'json'
+require 'zlib'
 
 describe Encoder do
 
@@ -106,6 +108,24 @@ describe Encoder do
 
       expect{Encoder.new.serialize_request(req)}.to raise_error(UnsupportedEncodingError, 'HttpRequest did not have Content-Type header set')
     end
+
+    it 'encodes data as gzip when content-encoding == gzip' do
+      req = OpenStruct.new({
+        :path => '/143j2bz1',
+        :verb => "POST",
+        :headers => {
+          'Content-Type' => 'application/json',
+          'Content-Encoding' => 'gzip'
+        },
+        :body => {
+          :one => "two"
+        }
+      })
+
+      encoder = Encoder.new
+
+      expect(encoder.serialize_request(req)).to eq(Zlib::Deflate.deflate(JSON.generate(req.body)))
+    end
   end
 
   describe 'deserialize_response' do
@@ -167,6 +187,20 @@ describe Encoder do
       body = 'some multipart encoded data here'
 
       expect{Encoder.new.deserialize_response(body, headers)}.to raise_error(UnsupportedEncodingError, 'FormEncoded does not support deserialization')
+    end
+
+    it 'decodes data from gzip when content-encoding == gzip' do
+      headers = {
+        'content-type' => 'application/json',
+        'content-encoding' => 'gzip'
+      }
+      body = JSON.generate({
+        :one => 'two'
+      })
+
+      encoded_body = Zlib::Deflate.deflate(body)
+
+      expect(Encoder.new.deserialize_response(encoded_body, headers)).to eq({'one' => 'two'})
     end
   end
 end

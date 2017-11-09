@@ -1,3 +1,5 @@
+require 'zlib'
+
 require_relative './serializers/json'
 require_relative './serializers/form_encoded'
 require_relative './serializers/text'
@@ -12,23 +14,34 @@ module BraintreeHttp
     def serialize_request(req)
       raise UnsupportedEncodingError.new('HttpRequest did not have Content-Type header set') unless req.headers && (req.headers['content-type'] || req.headers['Content-Type'])
 
-      content_type = req.headers['content-type'] || req.headers['Content-Type']
-      content_type = content_type.first if content_type.kind_of?(Array)
+      content_type = _extract_header(req.headers, 'Content-Type')
 
       enc = _encoder(content_type)
       raise UnsupportedEncodingError.new("Unable to serialize request with Content-Type #{content_type}. Supported encodings are #{supported_encodings}") unless enc
 
-      enc.encode(req)
+      encoded = enc.encode(req)
+      content_encoding = _extract_header(req.headers, 'Content-Encoding')
+
+      if content_encoding == 'gzip'
+        encoded = Zlib::Deflate.deflate(encoded)
+      end
+
+      encoded
     end
 
     def deserialize_response(resp, headers)
       raise UnsupportedEncodingError.new('HttpResponse did not have Content-Type header set') unless headers && (headers['content-type'] || headers['Content-Type'])
 
-      content_type = headers['content-type'] || headers['Content-Type']
-      content_type = content_type.first if content_type.kind_of?(Array)
+      content_type = _extract_header(headers, 'Content-Type')
 
       enc = _encoder(content_type)
       raise UnsupportedEncodingError.new("Unable to deserialize response with Content-Type #{content_type}. Supported decodings are #{supported_encodings}") unless enc
+
+      content_encoding = _extract_header(headers, 'Content-Encoding')
+
+      if content_encoding == 'gzip'
+        resp = Zlib::Inflate.inflate(resp)
+      end
 
       enc.decode(resp)
     end
@@ -41,6 +54,13 @@ module BraintreeHttp
       idx = @encoders.index { |enc| enc.content_type.match(content_type) }
 
       @encoders[idx] if idx
+    end
+
+    def _extract_header(headers, key)
+      value = headers[key] || headers[key.downcase]
+      value = value.first if value.kind_of?(Array)
+
+      value
     end
   end
 end
