@@ -1,3 +1,6 @@
+## 0.4.1
+* Fix regression where boundary parameter was not set in multipart requests.
+
 ## 0.4.0
 * Add gzip support.
 * Ensure requests are immutable.
