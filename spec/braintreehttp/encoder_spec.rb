@@ -55,6 +55,8 @@ describe Encoder do
 
       serialized = Encoder.new.serialize_request(req)
 
+      expect(req.headers['Content-Type']).to include('multipart/form-data; charset=utf8; boundary=')
+
       expect(serialized).to include("Content-Disposition: form-data; name=\"readme\"; filename=\"README.md\"")
       expect(serialized).to include("Content-Disposition: form-data; name=\"readme\"; filename=\"README.md\"")
       expect(serialized).to include("Content-Disposition: form-data; name=\"key\"")
