@@ -1,3 +1,7 @@
+## 0.4.0
+* Add gzip support.
+* Ensure requests are immutable.
+
 ## 0.3.0
 * Add Form encoder.
 
