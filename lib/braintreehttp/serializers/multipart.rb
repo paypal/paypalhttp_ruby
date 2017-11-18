@@ -1,8 +1,11 @@
 module BraintreeHttp
   class Multipart
+
+    LINE_FEED = "\r\n"
+
     def encode(request)
       boundary = DateTime.now.strftime("%Q")
-      request.headers["Content-Type"] = "multipart/form-data; boundary=#{boundary}"
+      request.headers["Content-Type"] = "#{request.headers['Content-Type']}; boundary=#{boundary}"
 
       form_params = []
       request.body.each do |k, v|

@@ -4,8 +4,6 @@ require 'date'
 
 module BraintreeHttp
 
-  LINE_FEED = "\r\n"
-
   class HttpClient
     attr_accessor :environment, :encoder
 
@@ -49,11 +47,13 @@ module BraintreeHttp
         request.headers["User-Agent"] = user_agent
       end
 
-      http_request = Net::HTTPGenericRequest.new(request.verb, true, true, request.path, request.headers)
-
+      body = nil
       if has_body(request)
-        http_request.body = @encoder.serialize_request(request)
+        body = @encoder.serialize_request(request)
       end
+
+      http_request = Net::HTTPGenericRequest.new(request.verb, body != nil, true, request.path, request.headers)
+      http_request.body = body
 
       uri = URI(@environment.base_url)
       Net::HTTP.start(uri.host, uri.port, :use_ssl => uri.scheme == 'https') do |http|
