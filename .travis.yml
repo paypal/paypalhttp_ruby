@@ -1,0 +1,10 @@
+language: ruby
+rvm:
+  - 2.2
+before_script: bundle install
+script: bundle exec rspec
+notifications:
+  email:
+    recipients:
+      - external-ci-notifications+braintreehttp@getbraintree.com
+    on_success: change
