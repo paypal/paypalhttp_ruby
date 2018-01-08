@@ -5,3 +5,4 @@ tags
 .bundle
 vendor
 .DS_Store
+**/.DS_Store
