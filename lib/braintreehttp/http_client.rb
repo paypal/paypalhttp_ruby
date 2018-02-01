@@ -71,7 +71,7 @@ module BraintreeHttp
         if deserialized.is_a?(String) || deserialized.is_a?(Array)
           result = deserialized
         else
-          result = _parse_hash(deserialized)
+          result = _parse_values(deserialized)
         end
       else
         result = nil
@@ -90,15 +90,21 @@ module BraintreeHttp
       end
     end
 
-    def _parse_hash(hash)
-      obj = OpenStruct.new()
+    def _parse_values(values)
+      obj = nil
 
-      hash.each do |k, v|
-        if v.is_a?(Hash)
-          obj[k] = _parse_hash(v)
-        else
-          obj[k] = v
+      if values.is_a?(Array)
+        obj = []
+        values.each do |v|
+          obj << _parse_values(v)
         end
+      elsif values.is_a?(Hash)
+        obj = OpenStruct.new()
+        values.each do |k, v|
+          obj[k] = _parse_values(v)
+        end
+      else
+        obj = values
       end
 
       obj

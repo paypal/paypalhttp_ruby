@@ -236,7 +236,9 @@ describe HttpClient do
         :some_hash => {
           :some_int => 1
         },
-        :some_array => [1, 2, 3]
+        :some_array => [[{
+          :array_key => 'array-value'
+        }]]
       }
     }
 
@@ -252,7 +254,7 @@ describe HttpClient do
     expect(resp.result.key).to eq('value')
     expect(resp.result.nested_key.string).to eq('stringvalue')
     expect(resp.result.nested_key.some_hash.some_int).to eq(1)
-    expect(resp.result.nested_key.some_array).to eq([1, 2, 3])
+    expect(resp.result.nested_key.some_array[0][0].array_key).to eq('array-value')
   end
 
 	it "does not error if no file or body present on a request class" do
