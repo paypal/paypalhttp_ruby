@@ -105,7 +105,7 @@ describe HttpClient do
     stub_request(:delete, @environment.base_url + "/path")
 
     req = OpenStruct.new({
-      :verb => "DELETE", 
+      :verb => "DELETE",
       :path => "/path",
       :headers => {
         "Content-Type" => "text/plain"
@@ -224,6 +224,35 @@ describe HttpClient do
     resp = http_client.execute(req)
 
     expect(resp.result).to eq(return_data)
+  end
+
+  it 'deserializes nested response object into nested openstruct response' do
+    WebMock.enable!
+
+    return_data = {
+      :key => 'value',
+      :nested_key => {
+        :string => 'stringvalue',
+        :some_hash => {
+          :some_int => 1
+        },
+        :some_array => [1, 2, 3]
+      }
+    }
+
+    http_client = HttpClient.new(@environment)
+
+    stub_request(:get, @environment.base_url + "/v1/api")
+      .to_return(body: JSON.generate(return_data), status: 200, headers: {"Content-Type" => "application/json"})
+
+    req = OpenStruct.new({:verb => "GET", :path => "/v1/api"})
+
+    resp = http_client.execute(req)
+
+    expect(resp.result.key).to eq('value')
+    expect(resp.result.nested_key.string).to eq('stringvalue')
+    expect(resp.result.nested_key.some_hash.some_int).to eq(1)
+    expect(resp.result.nested_key.some_array).to eq([1, 2, 3])
   end
 
 	it "does not error if no file or body present on a request class" do
