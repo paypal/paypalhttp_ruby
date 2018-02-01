@@ -1,3 +1,6 @@
+## 0.4.2
+* Fix bug where nested responses were not completely deserialized into openstructs.
+
 ## 0.4.1
 * Fix regression where boundary parameter was not set in multipart requests.
 
