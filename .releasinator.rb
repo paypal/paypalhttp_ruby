@@ -43,7 +43,7 @@ configatron.custom_validation_methods = [
 # Update version, build, and publish to rubygems
 def update_version_method(version, semver_type)
   File.open("lib/braintreehttp/version.rb", "w") do |f|
-    f <<  "VERSION = \"#{version}\""
+    f <<  "VERSION = \"#{version}\"\n"
   end
 end
 
