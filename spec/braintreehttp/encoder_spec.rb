@@ -1,5 +1,6 @@
 require 'ostruct'
 require 'json'
+require 'stringio'
 require 'zlib'
 
 describe Encoder do
@@ -126,7 +127,14 @@ describe Encoder do
 
       encoder = Encoder.new
 
-      expect(encoder.serialize_request(req)).to eq(Zlib::Deflate.deflate(JSON.generate(req.body)))
+      out = StringIO.new('w')
+      writer = Zlib::GzipWriter.new(out)
+      writer.write JSON.generate(req.body)
+      writer.close
+
+      expected_body = out.string
+
+      expect(encoder.serialize_request(req)).to eq(expected_body)
     end
   end
 
@@ -202,7 +210,11 @@ describe Encoder do
         :one => 'two'
       })
 
-      encoded_body = Zlib::Deflate.deflate(body)
+      out = StringIO.new('w')
+      encoder = Zlib::GzipWriter.new(out)
+      encoder.write(body)
+      encoder.close
+      encoded_body = out.string
 
       expect(Encoder.new.deserialize_response(encoded_body, headers)).to eq({'one' => 'two'})
     end

@@ -1,3 +1,4 @@
+require 'stringio'
 require 'zlib'
 
 require_relative './serializers/json'
@@ -23,7 +24,13 @@ module BraintreeHttp
       content_encoding = _extract_header(req.headers, 'Content-Encoding')
 
       if content_encoding == 'gzip'
-        encoded = Zlib::Deflate.deflate(encoded)
+        out = StringIO.new('w')
+        writer = Zlib::GzipWriter.new(out)
+
+        writer.write encoded
+        writer.close
+
+        encoded = out.string
       end
 
       encoded
@@ -40,7 +47,10 @@ module BraintreeHttp
       content_encoding = _extract_header(headers, 'Content-Encoding')
 
       if content_encoding == 'gzip'
-        resp = Zlib::Inflate.inflate(resp)
+        buf = StringIO.new(resp, 'rb')
+        reader = Zlib::GzipReader.new(buf)
+
+        resp = reader.read
       end
 
       enc.decode(resp)
