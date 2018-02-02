@@ -1,3 +1,6 @@
+## 0.4.4
+* Ensure Zlib::GzipReader/Writer is used for inflating/deflating gzippable HTTP request bodies.
+
 ## 0.4.3
 * Fix bug where nested array responses were not completely deserialized into openstructs.
 
