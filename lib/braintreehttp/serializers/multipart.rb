@@ -33,23 +33,28 @@ module BraintreeHttp
       return "Content-Disposition: form-data; name=\"#{key}\"#{LINE_FEED}#{LINE_FEED}#{value}#{LINE_FEED}"
     end
 
-    def _add_form_part(key, value)
+    def _add_form_part(key, form_part)
       retValue = "Content-Disposition: form-data; name=\"#{key}\""
-      if value.headers["Content-Type"] == "application/json"
+      if form_part.headers["Content-Type"] == "application/json"
         retValue += "; filename=\"#{key}.json\""
       end
       retValue += "#{LINE_FEED}"
 
-      value.headers.each do |key, value|
+      form_part.headers.each do |key, value|
         retValue += "#{key}: #{value}#{LINE_FEED}"
       end
 
       retValue += "#{LINE_FEED}"
 
-      if value.headers["Content-Type"] == "application/json"
-        retValue += JSON.generate(value.value)
+      if form_part.headers["Content-Type"]
+        retValue += Encoder.new().serialize_request(OpenStruct.new({
+          :verb => 'POST',
+          :path => '/',
+          :headers => form_part.headers,
+          :body => form_part.value
+        }))
       else
-        retValue += value.value
+        retValue += form_part.value
       end
 
       retValue += "#{LINE_FEED}"
