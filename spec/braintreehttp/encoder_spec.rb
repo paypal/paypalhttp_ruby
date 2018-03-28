@@ -74,8 +74,8 @@ describe Encoder do
           "Content-Type" => "multipart/form-data; charset=utf8"
         },
         :body => {
+          :readme => file,
           :input=> FormPart.new({:key => 'val'}, {'content-type': 'application/json'}),
-          :readme => file
         }
       })
 
@@ -88,6 +88,7 @@ describe Encoder do
       expect(serialized).to include("Content-Disposition: form-data; name=\"input\"; filename=\"input.json\"")
       expect(serialized).to include("Content-Type: application/json")
       expect(serialized).to include("{\"key\":\"val\"}")
+      expect(serialized).to match(/.*Content-Disposition: form-data; name=\"input\"; filename=\"input.json\".*Content-Disposition: form-data; name=\"readme\"; filename=\"README.md\".*/m)
     end
 
     it 'serializes the request when content-type == application/x-www-form-urlencoded' do

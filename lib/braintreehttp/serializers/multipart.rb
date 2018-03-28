@@ -8,16 +8,20 @@ module BraintreeHttp
       request.headers["Content-Type"] = "#{request.headers['Content-Type']}; boundary=#{boundary}"
 
       form_params = []
+      value_params = []
+      file_params = []
+
       request.body.each do |k, v|
         if v.is_a? File
-          form_params.push(_add_file_part(k, v))
+          file_params.push(_add_file_part(k, v))
         elsif v.is_a? FormPart
-          form_params.push(_add_form_part(k, v))
+          value_params.push(_add_form_part(k, v))
         else
-          form_params.push(_add_form_field(k, v))
+          value_params.push(_add_form_field(k, v))
         end
       end
 
+      form_params = value_params + file_params
       form_params.collect {|p| "--" + boundary + "#{LINE_FEED}" + p}.join("") + "--" + boundary + "--"
     end
 
