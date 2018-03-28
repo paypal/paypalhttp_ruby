@@ -67,6 +67,8 @@ module BraintreeHttp
       file_extension = File.extname(filename).strip.downcase[1..-1]
       if file_extension == "jpeg" || file_extension == "jpg"
         return "image/jpeg"
+      elsif file_extension == "gif"
+        return "image/gif"
       elsif file_extension == "png"
         return "image/png"
       elsif file_extension == "pdf"
