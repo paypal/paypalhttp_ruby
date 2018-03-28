@@ -59,11 +59,35 @@ describe Encoder do
       expect(req.headers['Content-Type']).to include('multipart/form-data; charset=utf8; boundary=')
 
       expect(serialized).to include("Content-Disposition: form-data; name=\"readme\"; filename=\"README.md\"")
-      expect(serialized).to include("Content-Disposition: form-data; name=\"readme\"; filename=\"README.md\"")
       expect(serialized).to include("Content-Disposition: form-data; name=\"key\"")
       expect(serialized).to include("value")
       expect(serialized).to include("Content-Disposition: form-data; name=\"another_key\"")
       expect(serialized).to include("1013")
+    end
+
+    it 'serializes the request when Json is provided inside multipart/form-data' do
+      file = File.new("README.md", "r")
+      req = OpenStruct.new({
+        :verb => "POST",
+        :path => "/v1/api",
+        :headers => {
+          "Content-Type" => "multipart/form-data; charset=utf8"
+        },
+        :body => {
+          :input=> FormPart.new({:key => 'val'}, {'content-type': 'application/json'}),
+          :readme => file
+        }
+      })
+
+      serialized = Encoder.new.serialize_request(req)
+
+      expect(req.headers['Content-Type']).to include('multipart/form-data; charset=utf8; boundary=')
+
+      expect(serialized).to include("Content-Disposition: form-data; name=\"readme\"; filename=\"README.md\"")
+      expect(serialized).to include("Content-Type: application/octet-stream")
+      expect(serialized).to include("Content-Disposition: form-data; name=\"input\"; filename=\"input.json\"")
+      expect(serialized).to include("Content-Type: application/json")
+      expect(serialized).to include("{\"key\":\"val\"}")
     end
 
     it 'serializes the request when content-type == application/x-www-form-urlencoded' do

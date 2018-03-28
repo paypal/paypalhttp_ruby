@@ -11,6 +11,8 @@ module BraintreeHttp
       request.body.each do |k, v|
         if v.is_a? File
           form_params.push(_add_file_part(k, v))
+        elsif v.is_a? FormPart
+          form_params.push(_add_form_part(k, v))
         else
           form_params.push(_add_form_field(k, v))
         end
@@ -29,6 +31,30 @@ module BraintreeHttp
 
     def _add_form_field(key, value)
       return "Content-Disposition: form-data; name=\"#{key}\"#{LINE_FEED}#{LINE_FEED}#{value}#{LINE_FEED}"
+    end
+
+    def _add_form_part(key, value)
+      retValue = "Content-Disposition: form-data; name=\"#{key}\""
+      if value.headers["Content-Type"] == "application/json"
+        retValue += "; filename=\"#{key}.json\""
+      end
+      retValue += "#{LINE_FEED}"
+
+      value.headers.each do |key, value|
+        retValue += "#{key}: #{value}#{LINE_FEED}"
+      end
+
+      retValue += "#{LINE_FEED}"
+
+      if value.headers["Content-Type"] == "application/json"
+        retValue += JSON.generate(value.value)
+      else
+        retValue += value.value
+      end
+
+      retValue += "#{LINE_FEED}"
+
+      return retValue
     end
 
     def _add_file_part(key, file)
