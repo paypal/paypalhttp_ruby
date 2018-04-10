@@ -1,3 +1,6 @@
+## 0.5.0
+* Add support for multipart/form-data file uploads with JSON content FormParts
+
 ## 0.4.4
 * Ensure Zlib::GzipReader/Writer is used for inflating/deflating gzippable HTTP request bodies.
 
