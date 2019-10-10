@@ -1,4 +1,4 @@
-module BraintreeHttp
+module PayPalHttp
   class Multipart
 
     LINE_FEED = "\r\n"

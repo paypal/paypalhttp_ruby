@@ -1,4 +1,4 @@
-module BraintreeHttp
+module PayPalHttp
   class HttpError < IOError
     attr_accessor :status_code, :result, :headers
     def initialize(status_code, result, headers)

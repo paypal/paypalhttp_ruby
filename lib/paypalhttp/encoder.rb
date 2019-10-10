@@ -6,7 +6,7 @@ require_relative './serializers/form_encoded'
 require_relative './serializers/text'
 require_relative './serializers/multipart'
 
-module BraintreeHttp
+module PayPalHttp
   class Encoder
     def initialize
       @encoders = [Json.new, Text.new, Multipart.new, FormEncoded.new]

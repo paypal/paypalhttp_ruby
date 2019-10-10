@@ -1,6 +1,6 @@
 require 'json'
 
-module BraintreeHttp
+module PayPalHttp
   class Json
     def encode(request)
       JSON.generate(request.body)

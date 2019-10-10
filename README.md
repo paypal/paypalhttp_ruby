@@ -1,12 +1,12 @@
-## Braintree HttpClient
+## Paypal HttpClient
 
-BraintreeHttp is a generic HTTP Client.
+PaypasHttp is a generic HTTP Client.
 
-In it's simplest form, an [`HttpClient`](./lib/braintreehttp/http_client.rb) exposes an `#execute` method which takes an HTTP request, executes it against the domain described in an `Environment`, and returns an HTTP response.
+In it's simplest form, an [`HttpClient`](./lib/paypalhttp/http_client.rb) exposes an `#execute` method which takes an HTTP request, executes it against the domain described in an `Environment`, and returns an HTTP response.
 
 ### Environment
 
-An [`Environment`](./lib/braintreehttp/environment.rb) describes a domain that hosts a REST API, against which an `HttpClient` will make requests. `Environment` is a simple class that contains one property, `base_url`.
+An [`Environment`](./lib/paypalhttp/environment.rb) describes a domain that hosts a REST API, against which an `HttpClient` will make requests. `Environment` is a simple class that contains one property, `base_url`.
 
 ```ruby
 env = Environment.new('https://example.com')
@@ -56,7 +56,7 @@ end
 
 ### Error Handling
 
-`HttpClient#execute` may throw an `IOError` if something went wrong during the course of execution. If the server returned a non-200 response, this execption will be an instance of [`HttpError`](./lib/braintreehttp/errors.rb) that will contain a status code and headers you can use for debugging.
+`HttpClient#execute` may throw an `IOError` if something went wrong during the course of execution. If the server returned a non-200 response, this execption will be an instance of [`HttpError`](./lib/paypalhttp/errors.rb) that will contain a status code and headers you can use for debugging.
 
 ```ruby
 begin
@@ -70,10 +70,10 @@ end
 ```
 
 ### Serializer
-(De)Serialization of request and response data is done by instances of [`Encoder`](./lib/braintreehttp/encoder.rb). BraintreeHttp currently supports `json` encoding out of the box.
+(De)Serialization of request and response data is done by instances of [`Encoder`](./lib/paypalhttp/encoder.rb). PayPalHttp currently supports `json` encoding out of the box.
 
 ## License
-BraintreeHttp-Ruby is open source and available under the MIT license. See the [LICENSE](./LICENSE) file for more information.
+PayPalHttp-Ruby is open source and available under the MIT license. See the [LICENSE](./LICENSE) file for more information.
 
 ## Contributing
 Pull requests and issues are welcome. Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for more details.

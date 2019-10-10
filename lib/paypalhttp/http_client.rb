@@ -2,7 +2,7 @@ require 'ostruct'
 require 'net/http'
 require 'date'
 
-module BraintreeHttp
+module PayPalHttp
 
   class HttpClient
     attr_accessor :environment, :encoder
@@ -14,7 +14,7 @@ module BraintreeHttp
     end
 
     def user_agent
-      "BraintreeHttp-Ruby HTTP/1.1"
+      "PayPalHttp-Ruby HTTP/1.1"
     end
 
     def add_injector(&block)
