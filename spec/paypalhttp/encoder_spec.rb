@@ -45,7 +45,7 @@ describe Encoder do
         :verb => "POST",
         :path => "/v1/api",
         :headers => {
-          "Content-Type" => "multipart/form-data; charset=utf8"
+          "content-type" => "multipart/form-data; charset=utf8"
         },
         :body => {
           :key => "value",
@@ -56,7 +56,7 @@ describe Encoder do
 
       serialized = Encoder.new.serialize_request(req)
 
-      expect(req.headers['Content-Type']).to include('multipart/form-data; charset=utf8; boundary=')
+      expect(req.headers['content-type']).to include('multipart/form-data; charset=utf8; boundary=')
 
       expect(serialized).to include("Content-Disposition: form-data; name=\"readme\"; filename=\"README.md\"")
       expect(serialized).to include("Content-Disposition: form-data; name=\"key\"")
@@ -71,7 +71,7 @@ describe Encoder do
         :verb => "POST",
         :path => "/v1/api",
         :headers => {
-          "Content-Type" => "multipart/form-data; charset=utf8"
+          "content-type" => "multipart/form-data; charset=utf8"
         },
         :body => {
           :readme => file,
@@ -81,7 +81,7 @@ describe Encoder do
 
       serialized = Encoder.new.serialize_request(req)
 
-      expect(req.headers['Content-Type']).to include('multipart/form-data; charset=utf8; boundary=')
+      expect(req.headers['content-type']).to include('multipart/form-data; charset=utf8; boundary=')
 
       expect(serialized).to include("Content-Disposition: form-data; name=\"readme\"; filename=\"README.md\"")
       expect(serialized).to include("Content-Type: application/octet-stream")
@@ -96,7 +96,7 @@ describe Encoder do
         :verb => "POST",
         :path => "/v1/api",
         :headers => {
-          "Content-Type" => "application/x-www-form-urlencoded; charset=utf8"
+          "content-type" => "application/x-www-form-urlencoded; charset=utf8"
         },
         :body => {
           :key => "value with a space",
@@ -142,8 +142,8 @@ describe Encoder do
         :path => '/143j2bz1',
         :verb => "POST",
         :headers => {
-          'Content-Type' => 'application/json',
-          'Content-Encoding' => 'gzip'
+          'content-type' => 'application/json',
+          'content-encoding' => 'gzip'
         },
         :body => {
           :one => "two"

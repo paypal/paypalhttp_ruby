@@ -25,6 +25,23 @@ module PayPalHttp
       request.respond_to?(:body) and request.body
     end
 
+    def format_headers(headers)
+      formatted_headers = {}
+      headers.each do |key, value|
+        formatted_headers[key.downcase] = value
+      end
+      formatted_headers
+    end
+
+    def map_headers(raw_headers , formatted_headers)
+      raw_headers.each do |key, value|
+        if formatted_headers.key?(key.downcase) == true
+          raw_headers[key] = formatted_headers[key.downcase]
+        end
+      end
+      raw_headers
+    end
+
     def execute(req)
       headers = req.headers || {}
 
@@ -43,13 +60,17 @@ module PayPalHttp
         injector.call(request)
       end
 
-      if !request.headers["User-Agent"] || request.headers["User-Agent"] == "Ruby"
-        request.headers["User-Agent"] = user_agent
+      formatted_headers = format_headers(request.headers)
+      if !formatted_headers["user-agent"] || formatted_headers["user-agent"] == "Ruby"
+        request.headers["user-agent"] = user_agent
       end
 
       body = nil
       if has_body(request)
+        raw_headers = request.headers
+        request.headers = formatted_headers
         body = @encoder.serialize_request(request)
+        request.headers = map_headers(raw_headers, request.headers)
       end
 
       http_request = Net::HTTPGenericRequest.new(request.verb, body != nil, true, request.path, request.headers)

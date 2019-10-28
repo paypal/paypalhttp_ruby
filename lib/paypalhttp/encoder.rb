@@ -13,21 +13,22 @@ module PayPalHttp
     end
 
     def serialize_request(req)
-      raise UnsupportedEncodingError.new('HttpRequest did not have Content-Type header set') unless req.headers && (req.headers['content-type'] || req.headers['Content-Type'])
+      raise UnsupportedEncodingError.new('HttpRequest did not have Content-Type header set') unless req.headers && (req.headers['content-type'])
 
-      content_type = _extract_header(req.headers, 'Content-Type')
+      content_type = _extract_header(req.headers, 'content-type')
 
       enc = _encoder(content_type)
       raise UnsupportedEncodingError.new("Unable to serialize request with Content-Type #{content_type}. Supported encodings are #{supported_encodings}") unless enc
 
       encoded = enc.encode(req)
-      content_encoding = _extract_header(req.headers, 'Content-Encoding')
+      content_encoding = _extract_header(req.headers, 'content-encoding')
 
       if content_encoding == 'gzip'
         out = StringIO.new('w')
         writer = Zlib::GzipWriter.new(out)
 
         writer.write encoded
+
         writer.close
 
         encoded = out.string
@@ -37,14 +38,14 @@ module PayPalHttp
     end
 
     def deserialize_response(resp, headers)
-      raise UnsupportedEncodingError.new('HttpResponse did not have Content-Type header set') unless headers && (headers['content-type'] || headers['Content-Type'])
+      raise UnsupportedEncodingError.new('HttpResponse did not have Content-Type header set') unless headers && (headers['content-type'])
 
-      content_type = _extract_header(headers, 'Content-Type')
+      content_type = _extract_header(headers, 'content-type')
 
       enc = _encoder(content_type)
       raise UnsupportedEncodingError.new("Unable to deserialize response with Content-Type #{content_type}. Supported decodings are #{supported_encodings}") unless enc
 
-      content_encoding = _extract_header(headers, 'Content-Encoding')
+      content_encoding = _extract_header(headers, 'content-encoding')
 
       if content_encoding == 'gzip'
         buf = StringIO.new(resp, 'rb')
@@ -67,7 +68,7 @@ module PayPalHttp
     end
 
     def _extract_header(headers, key)
-      value = headers[key] || headers[key.downcase]
+      value = headers[key.downcase]
       value = value.first if value.kind_of?(Array)
 
       value
