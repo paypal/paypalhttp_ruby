@@ -88,7 +88,7 @@ module PayPalHttp
       result = response.body
       headers = response.to_hash
       if result && !result.empty?
-        deserialized = @encoder.deserialize_response(response.body, headers)
+        deserialized = @encoder.deserialize_response(response.body, format_headers(headers))
         if deserialized.is_a?(String) || deserialized.is_a?(Array)
           result = deserialized
         else
