@@ -1,11 +1,11 @@
-module BraintreeHttp
+module PayPalHttp
   class Multipart
 
     LINE_FEED = "\r\n"
 
     def encode(request)
       boundary = DateTime.now.strftime("%Q")
-      request.headers["Content-Type"] = "#{request.headers['Content-Type']}; boundary=#{boundary}"
+      request.headers["content-type"] = "#{request.headers['content-type']}; boundary=#{boundary}"
 
       form_params = []
       value_params = []
@@ -39,7 +39,8 @@ module BraintreeHttp
 
     def _add_form_part(key, form_part)
       retValue = "Content-Disposition: form-data; name=\"#{key}\""
-      if form_part.headers["Content-Type"] == "application/json"
+      formatted_headers = format_headers(form_part.headers)
+      if formatted_headers["content-type"] == "application/json"
         retValue += "; filename=\"#{key}.json\""
       end
       retValue += "#{LINE_FEED}"
@@ -50,11 +51,11 @@ module BraintreeHttp
 
       retValue += "#{LINE_FEED}"
 
-      if form_part.headers["Content-Type"]
+      if formatted_headers["content-type"]
         retValue += Encoder.new().serialize_request(OpenStruct.new({
           :verb => 'POST',
           :path => '/',
-          :headers => form_part.headers,
+          :headers => formatted_headers,
           :body => form_part.value
         }))
       else
@@ -85,6 +86,14 @@ module BraintreeHttp
       else
         return "application/octet-stream"
       end
+    end
+
+    def format_headers(headers)
+      formatted_headers = {}
+      headers.each do |key, value|
+        formatted_headers[key.downcase] = value
+      end
+      formatted_headers
     end
   end
 end

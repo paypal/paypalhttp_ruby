@@ -1,6 +1,6 @@
 require 'uri'
 
-module BraintreeHttp
+module PayPalHttp
   class FormEncoded
     def encode(request)
       encoded_params = []

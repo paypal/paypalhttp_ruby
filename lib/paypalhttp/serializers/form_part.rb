@@ -1,4 +1,4 @@
-module BraintreeHttp
+module PayPalHttp
   class FormPart
     attr_accessor :value, :headers
 

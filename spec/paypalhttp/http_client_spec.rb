@@ -63,7 +63,7 @@ describe HttpClient do
     http_client.execute(req)
 
     assert_requested :get, "#{@environment.base_url}/", {
-      :headers => {"User-Agent" => "BraintreeHttp-Ruby HTTP/1.1"},
+      :headers => {"User-Agent" => "PayPalHttp-Ruby HTTP/1.1"},
       :times => 1
     }
   end

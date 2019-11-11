@@ -1,4 +1,4 @@
-module BraintreeHttp
+module PayPalHttp
   class Text
     def encode(request)
       request.body.to_s

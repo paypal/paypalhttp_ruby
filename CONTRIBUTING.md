@@ -1,4 +1,4 @@
-# Contribute to the Braintree Ruby HttpClient
+# Contribute to the Paypal Ruby HttpClient
 
 ### *Pull requests are welcome!*
 

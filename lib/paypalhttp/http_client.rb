@@ -2,7 +2,7 @@ require 'ostruct'
 require 'net/http'
 require 'date'
 
-module BraintreeHttp
+module PayPalHttp
 
   class HttpClient
     attr_accessor :environment, :encoder
@@ -14,7 +14,7 @@ module BraintreeHttp
     end
 
     def user_agent
-      "BraintreeHttp-Ruby HTTP/1.1"
+      "PayPalHttp-Ruby HTTP/1.1"
     end
 
     def add_injector(&block)
@@ -23,6 +23,23 @@ module BraintreeHttp
 
     def has_body(request)
       request.respond_to?(:body) and request.body
+    end
+
+    def format_headers(headers)
+      formatted_headers = {}
+      headers.each do |key, value|
+        formatted_headers[key.downcase] = value
+      end
+      formatted_headers
+    end
+
+    def map_headers(raw_headers , formatted_headers)
+      raw_headers.each do |key, value|
+        if formatted_headers.key?(key.downcase) == true
+          raw_headers[key] = formatted_headers[key.downcase]
+        end
+      end
+      raw_headers
     end
 
     def execute(req)
@@ -43,13 +60,17 @@ module BraintreeHttp
         injector.call(request)
       end
 
-      if !request.headers["User-Agent"] || request.headers["User-Agent"] == "Ruby"
-        request.headers["User-Agent"] = user_agent
+      formatted_headers = format_headers(request.headers)
+      if !formatted_headers["user-agent"] || formatted_headers["user-agent"] == "Ruby"
+        request.headers["user-agent"] = user_agent
       end
 
       body = nil
       if has_body(request)
+        raw_headers = request.headers
+        request.headers = formatted_headers
         body = @encoder.serialize_request(request)
+        request.headers = map_headers(raw_headers, request.headers)
       end
 
       http_request = Net::HTTPGenericRequest.new(request.verb, body != nil, true, request.path, request.headers)
@@ -67,7 +88,7 @@ module BraintreeHttp
       result = response.body
       headers = response.to_hash
       if result && !result.empty?
-        deserialized = @encoder.deserialize_response(response.body, headers)
+        deserialized = @encoder.deserialize_response(response.body, format_headers(headers))
         if deserialized.is_a?(String) || deserialized.is_a?(Array)
           result = deserialized
         else

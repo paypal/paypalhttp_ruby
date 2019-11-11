@@ -1,5 +1,5 @@
 configatron.product_name = "test product"
-require_relative './lib/braintreehttp/version'
+require_relative './lib/paypalhttp/version'
 
 # Custom validations
 def get_package_version
@@ -42,7 +42,7 @@ configatron.custom_validation_methods = [
 
 # Update version, build, and publish to rubygems
 def update_version_method(version, semver_type)
-  File.open("lib/braintreehttp/version.rb", "w") do |f|
+  File.open("lib/paypalhttp/version.rb", "w") do |f|
     f <<  "VERSION = \"#{version}\"\n"
   end
 end
@@ -50,24 +50,24 @@ end
 configatron.update_version_method = method(:update_version_method)
 
 def clean
-  CommandProcessor.command("rm -f braintreehttp-*.gem")
+  CommandProcessor.command("rm -f paypalhttp-*.gem")
 end
 
 def build_method
   clean
-  CommandProcessor.command("gem build braintreehttp.gemspec", live_output=true)
+  CommandProcessor.command("gem build paypalhttp.gemspec", live_output=true)
 end
 
 configatron.build_method = method(:build_method)
 
 def publish_to_package_manager(version)
-  CommandProcessor.command("gem push braintreehttp-#{version}.gem", live_outout=true)
+  CommandProcessor.command("gem push paypalhttp-#{version}.gem", live_outout=true)
 end
 
 configatron.publish_to_package_manager_method = method(:publish_to_package_manager)
 
 def wait_for_package_manager(version)
-  CommandProcessor.wait_for("wget -qO- https://rubygems.org/gems/braintreehttp/versions/#{version} | cat")
+  CommandProcessor.wait_for("wget -qO- https://rubygems.org/gems/paypalhttp/versions/#{version} | cat")
 end
 
 configatron.wait_for_package_manager_method = method(:wait_for_package_manager)
