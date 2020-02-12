@@ -1,4 +1,3 @@
-require 'ostruct'
 require 'net/http'
 require 'date'
 
@@ -45,7 +44,7 @@ module PayPalHttp
     def execute(req)
       headers = req.headers || {}
 
-      request = OpenStruct.new({
+      request = Container.new({
         :verb => req.verb,
         :path => req.path,
         :headers => headers.clone,
@@ -98,7 +97,7 @@ module PayPalHttp
         result = nil
       end
 
-      obj = OpenStruct.new({
+      obj = Container.new({
         :status_code => status_code,
         :result => result,
         :headers => response.to_hash,
@@ -120,7 +119,7 @@ module PayPalHttp
           obj << _parse_values(v)
         end
       elsif values.is_a?(Hash)
-        obj = OpenStruct.new()
+        obj = Container.new()
         values.each do |k, v|
           obj[k] = _parse_values(v)
         end
