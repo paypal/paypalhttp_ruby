@@ -15,7 +15,7 @@ module PayPalHttp
     def serialize_request(req)
       raise UnsupportedEncodingError.new('HttpRequest did not have Content-Type header set') unless req.headers && (req.headers['content-type'])
 
-      content_type = _extract_header(req.headers, 'content-type')
+      content_type = _extract_header(req.headers, 'content-type').downcase
 
       enc = _encoder(content_type)
       raise UnsupportedEncodingError.new("Unable to serialize request with Content-Type #{content_type}. Supported encodings are #{supported_encodings}") unless enc
@@ -40,7 +40,7 @@ module PayPalHttp
     def deserialize_response(resp, headers)
       raise UnsupportedEncodingError.new('HttpResponse did not have Content-Type header set') unless headers && (headers['content-type'])
 
-      content_type = _extract_header(headers, 'content-type')
+      content_type = _extract_header(headers, 'content-type').downcase
 
       enc = _encoder(content_type)
       raise UnsupportedEncodingError.new("Unable to deserialize response with Content-Type #{content_type}. Supported decodings are #{supported_encodings}") unless enc
