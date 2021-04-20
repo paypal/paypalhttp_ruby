@@ -11,7 +11,7 @@ module PayPalHttp
     end
 
     def content_type
-      /application\/json/
+      /application\/json/i
     end
   end
 end
