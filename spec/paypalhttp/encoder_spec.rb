@@ -205,8 +205,35 @@ describe Encoder do
       expect(deserialized).to eq(expected)
     end
 
+    it 'deserializes the response when content-type == application/json: case insensitive' do
+      expected = {
+        "string" => "value",
+        "number" => 1.23,
+        "bool" => true,
+        "array" => ["one", "two", "three"],
+        "nested" => {
+          "nested_string" => "nested_value",
+          "nested_array" => [1,2,3]
+        }
+      }
+
+      headers = {"content-type" => ["application/JSON; charset=utf8"]}
+      body = '{"string":"value","number":1.23,"bool":true,"array":["one","two","three"],"nested":{"nested_string":"nested_value","nested_array":[1,2,3]}}'
+
+      deserialized = Encoder.new.deserialize_response(body, headers)
+
+      expect(deserialized).to eq(expected)
+    end
+
     it 'deserializes the response when content-type == text/*' do
       headers = {"content-type" => ["text/plain; charset=utf8"]}
+      body = 'some text'
+
+      expect(Encoder.new.deserialize_response(body, headers)).to eq('some text')
+    end
+
+    it 'deserializes the response when content-type == text/*: case insensitive' do
+      headers = {"content-type" => ["TEXT/plain; charset=utf8"]}
       body = 'some text'
 
       expect(Encoder.new.deserialize_response(body, headers)).to eq('some text')

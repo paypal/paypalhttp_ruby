@@ -226,6 +226,57 @@ describe HttpClient do
     expect(resp.result).to eq(return_data)
   end
 
+  it 'handles json array result: case insensitive' do
+    WebMock.enable!
+
+    return_data = ["one", "two"]
+
+    http_client = HttpClient.new(@environment)
+
+    stub_request(:get, @environment.base_url + "/v1/api")
+      .to_return(body: JSON.generate(return_data), status: 200, headers: {"Content-Type" => "application/JSON"})
+
+    req = OpenStruct.new({:verb => "GET", :path => "/v1/api"})
+
+    resp = http_client.execute(req)
+
+    expect(resp.result).to eq(return_data)
+  end
+
+  it 'handles plain text result' do
+    WebMock.enable!
+
+    return_data = "value"
+
+    http_client = HttpClient.new(@environment)
+
+    stub_request(:get, @environment.base_url + "/v1/api")
+      .to_return(body: return_data, status: 200, headers: {"Content-Type" => "text/plain; charset=utf8"})
+
+    req = OpenStruct.new({:verb => "GET", :path => "/v1/api"})
+
+    resp = http_client.execute(req)
+
+    expect(resp.result).to eq(return_data)
+  end
+
+  it 'handles plain text result: case insensitive' do
+    WebMock.enable!
+
+    return_data = "value"
+
+    http_client = HttpClient.new(@environment)
+
+    stub_request(:get, @environment.base_url + "/v1/api")
+      .to_return(body: return_data, status: 200, headers: {"Content-Type" => "TEXT/plain; charset=utf8"})
+
+    req = OpenStruct.new({:verb => "GET", :path => "/v1/api"})
+
+    resp = http_client.execute(req)
+
+    expect(resp.result).to eq(return_data)
+  end
+
   it 'deserializes nested response object into nested openstruct response' do
     WebMock.enable!
 
