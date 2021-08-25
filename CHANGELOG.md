@@ -1,3 +1,9 @@
+## 1.0.1
+* Fix Case Sensitivity of Content Type for deserialization process
+
+## 1.0.0
+* Fix Case Sensitivity of Acessing Headers by formatting beforehand
+
 ## 0.5.0
 * Add support for multipart/form-data file uploads with JSON content FormParts.
 
