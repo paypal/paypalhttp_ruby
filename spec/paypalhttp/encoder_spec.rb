@@ -225,6 +225,14 @@ describe Encoder do
       expect(deserialized).to eq(expected)
     end
 
+    it 'lowercases the content type when strings are frozen' do
+      headers = {"content-type" => ["application/JSON; charset=utf8".freeze]}
+
+      deserialized = Encoder.new.deserialize_response('{}', headers)
+
+      expect(deserialized).to eq({})
+    end
+
     it 'deserializes the response when content-type == text/*' do
       headers = {"content-type" => ["text/plain; charset=utf8"]}
       body = 'some text'

@@ -118,7 +118,6 @@ describe HttpClient do
 
     resp = http_client.execute(req)
     expect(resp.status_code).to eq(200)
-
     assert_requested(:delete, @environment.base_url + "/path") { |requested| requested.body == "I want to delete the thing" }
   end
 
@@ -330,6 +329,21 @@ describe HttpClient do
 		rescue Exception => e
 			fail e.message
 		end
-	end
+  end
+
+  it 'handles frozen header fields' do
+    WebMock.enable!
+
+    http_client = HttpClient.new(@environment)
+
+    req = OpenStruct.new({verb: 'GET', path: '/v1/api', headers: { 'Content-Type' => 'application/JSON'.freeze } })
+
+    stub_request(:get, "#{@environment.base_url}/v1/api")
+      .to_return(body: '{}', status: 200, headers: { 'content-type' => 'application/json' })
+
+    resp = http_client.execute(req)
+
+    expect(resp.headers).to eq({ 'content-type' => ['application/json'] })
+  end
 end
 
