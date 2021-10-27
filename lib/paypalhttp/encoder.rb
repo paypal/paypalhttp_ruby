@@ -40,8 +40,7 @@ module PayPalHttp
     def deserialize_response(resp, headers)
       raise UnsupportedEncodingError.new('HttpResponse did not have Content-Type header set') unless headers && (headers['content-type'])
 
-      content_type = _extract_header(headers, 'content-type')
-      content_type.downcase!
+      content_type = _extract_header(headers, 'content-type').downcase
 
       enc = _encoder(content_type)
       raise UnsupportedEncodingError.new("Unable to deserialize response with Content-Type #{content_type}. Supported decodings are #{supported_encodings}") unless enc

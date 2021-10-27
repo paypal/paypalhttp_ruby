@@ -330,6 +330,23 @@ describe HttpClient do
 		rescue Exception => e
 			fail e.message
 		end
-	end
+  end
+
+  it 'handles frozen header fields' do
+    WebMock.enable!
+
+    return_data = ["one", "two"]
+
+    http_client = HttpClient.new(@environment)
+
+    stub_request(:get, @environment.base_url + "/v1/api")
+      .to_return(body: JSON.generate(return_data), status: 200, headers: {"Content-Type".freeze => "application/JSON".freeze})
+
+    req = OpenStruct.new({:verb => "GET", :path => "/v1/api"})
+
+    resp = http_client.execute(req)
+
+    expect(resp.result).to eq(return_data)
+  end
 end
 
