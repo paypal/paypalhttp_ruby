@@ -26,11 +26,7 @@ module PayPalHttp
     end
 
     def format_headers(headers)
-      formatted_headers = {}
-      headers.each do |key, value|
-        formatted_headers[key.downcase] = value
-      end
-      formatted_headers
+      headers.transform_keys(&:downcase)
     end
 
     def map_headers(raw_headers , formatted_headers)
