@@ -5,7 +5,7 @@ module PayPalHttp
     def encode(request)
       encoded_params = []
       request.body.each do |k, v|
-        encoded_params.push("#{URI.escape(k.to_s)}=#{URI.escape(v.to_s)}")
+        encoded_params.push("#{escape(k)}=#{escape(v)}")
       end
 
       encoded_params.join("&")
@@ -17,6 +17,12 @@ module PayPalHttp
 
     def content_type
       /^application\/x-www-form-urlencoded/
+    end
+    
+    private
+    
+    def escape(value)
+      URI.encode_www_form_component(value.to_s).gsub('+', '%20')
     end
   end
 end
