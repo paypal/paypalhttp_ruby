@@ -105,7 +105,7 @@ describe Encoder do
       })
       serialized = Encoder.new.serialize_request(req)
 
-      expect(serialized).to eq("key=value%20with%20a%20space&another_key=1013")
+      expect(serialized).to eq("key=value+with+a+space&another_key=1013")
     end
 
     it 'throws when content-type is unsupported' do
