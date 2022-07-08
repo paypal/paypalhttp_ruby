@@ -1,6 +1,6 @@
 ## Paypal HttpClient
 
-PaypasHttp is a generic HTTP Client.
+PaypalHttp is a generic HTTP Client.
 
 In it's simplest form, an [`HttpClient`](./lib/paypalhttp/http_client.rb) exposes an `#execute` method which takes an HTTP request, executes it against the domain described in an `Environment`, and returns an HTTP response.
 
