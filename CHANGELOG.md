@@ -1,3 +1,6 @@
+## 1.0.2
+* Change URI.escape to CGI.escape which changes form encoding for spaces from "%20" to "+".
+
 ## 1.0.1
 * Fix Case Sensitivity of Content Type for deserialization process
 
