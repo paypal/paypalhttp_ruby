@@ -1,11 +1,11 @@
-require 'uri'
+require 'cgi'
 
 module PayPalHttp
   class FormEncoded
     def encode(request)
       encoded_params = []
       request.body.each do |k, v|
-        encoded_params.push("#{URI.escape(k.to_s)}=#{URI.escape(v.to_s)}")
+        encoded_params.push("#{CGI.escape(k.to_s)}=#{CGI.escape(v.to_s)}")
       end
 
       encoded_params.join("&")
