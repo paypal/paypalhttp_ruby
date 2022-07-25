@@ -1,4 +1,4 @@
-require 'cgi'
+require 'uri'
 
 module PayPalHttp
   class FormEncoded
