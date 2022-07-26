@@ -108,7 +108,7 @@ describe Encoder do
       expect(serialized).to eq("key=value%20with%20a%20space&another_key=1013")
     end
 
-    it 'encodes different special/unsafe characters when using CGI.escape' do
+    it 'encodes different special/unsafe characters when using a URI parser' do
       req = OpenStruct.new({
         :verb => "POST",
         :path => "/v1/api",
@@ -116,30 +116,13 @@ describe Encoder do
           "content-type" => "application/x-www-form-urlencoded; charset=utf8"
         },
         :body => {
-          :key => " ..<..>..%..{..}..|..^..`",
+          :key => " ..<..>..%..{..}..|..^..`..!",
           :another_key => 1013,
         }
       })
       serialized = Encoder.new.serialize_request(req)
 
-      expect(serialized).to eq("key=%20..%3C..%3E..%25..%7B..%7D..%7C..%5E..%60&another_key=1013")
-    end
-
-    it 'encodes different special/unsafe characters when using CGI.escape' do
-      req = OpenStruct.new({
-        :verb => "POST",
-        :path => "/v1/api",
-        :headers => {
-          "content-type" => "application/x-www-form-urlencoded; charset=utf8"
-        },
-        :body => {
-          :key => " ..<..>..%..{..}..|..^..`",
-          :another_key => 1013,
-        }
-      })
-      serialized = Encoder.new.serialize_request(req)
-
-      expect(serialized).to eq("key=%20..%3C..%3E..%25..%7B..%7D..%7C..%5E..%60&another_key=1013")
+      expect(serialized).to eq("key=%20..%3C..%3E..%25..%7B..%7D..%7C..%5E..%60..!&another_key=1013")
     end
 
     it 'does not encode links given certain special characters' do
