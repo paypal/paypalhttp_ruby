@@ -1,4 +1,4 @@
-## 2.0.1 (unreleased)
+## 2.0.1
 * Fix form encoded by replacing CGI.escape with URI parser.
 
 ## 2.0.0
