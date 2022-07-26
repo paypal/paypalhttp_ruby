@@ -1,3 +1,6 @@
+## 2.0.1 (unreleased)
+* Fix form encoded by replacing CGI.escape with URI parser.
+
 ## 2.0.0
 * Change URI.escape to CGI.escape which changes form encoding for spaces from "%20" to "+".
 
