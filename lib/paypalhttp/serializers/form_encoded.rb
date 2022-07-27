@@ -3,7 +3,7 @@ require 'uri'
 module PayPalHttp
   class FormEncoded
     def initialize
-      @parser = parser = URI::Parser.new()
+      @parser = URI::Parser.new()
     end
 
     def encode(request)
