@@ -26,17 +26,7 @@ module PayPalHttp
     end
 
     def format_headers(headers)
-      formatted_headers = {}
-      headers.each do |key, value|
-        # TODO: Since header is treated as a hash, val is in an array.
-        # Will this cause an issue when accessing and modifying val
-        # Ensure this is the case and will not propegate access issues/errors
-        if key.casecmp("content-type") == 0
-          value[0].downcase!
-        end
-          formatted_headers[key.downcase] = value
-      end
-      formatted_headers
+      headers.transform_keys(&:downcase)
     end
 
     def map_headers(raw_headers , formatted_headers)
