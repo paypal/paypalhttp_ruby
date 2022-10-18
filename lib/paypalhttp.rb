@@ -1,4 +1,5 @@
 module PayPalHttp
+  require_relative "paypalhttp/container"
   require_relative "paypalhttp/environment"
   require_relative "paypalhttp/http_client"
   require_relative "paypalhttp/errors"
